@@ -1,0 +1,39 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!21 &2100000
+Material:
+  serializedVersion: 8
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_Name: BuildingMetal
+  m_Shader: {fileID: 4800000, guid: 37639dc9dfcb02e418de063aa605d992, type: 3}
+  m_Parent: {fileID: 2100000, guid: 764b409be4fbd5545b040e5f10c73217, type: 2}
+  m_ModifiedSerializedProperties: 0
+  m_ValidKeywords:
+  - CURVEDWORLD_BEND_TYPE_CYLINDRICALROLLOFF_Z
+  - CURVEDWORLD_NORMAL_TRANSFORMATION_ON
+  m_InvalidKeywords:
+  - CURVEDWORLD_BEND_ID_1
+  m_LightmapFlags: 4
+  m_EnableInstancingVariants: 0
+  m_DoubleSidedGI: 0
+  m_CustomRenderQueue: -1
+  stringTagMap:
+    RenderType: Opaque
+  disabledShaderPasses: []
+  m_LockedProperties: 
+  m_SavedProperties:
+    serializedVersion: 3
+    m_TexEnvs: []
+    m_Ints: []
+    m_Floats:
+    - _Glossiness: 0.6
+    - _Metallic: 1
+    - _Smoothness: 0.6
+    m_Colors:
+    - _BaseColor: {r: 0.8078432, g: 0.8078432, b: 0.8078432, a: 1}
+    - _Color: {r: 0.8078432, g: 0.8078432, b: 0.8078432, a: 1}
+    - _CurvedWorldBendSettings: {r: 10, g: 1, b: 1, a: 0}
+  m_BuildTextureStacks: []
