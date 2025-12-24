@@ -18,14 +18,16 @@ public class DayNightController : MonoBehaviour
     public float realSecondsPerInterval = 7f;
     [Range(0, 24)] public float currentTime = 5f;
 
+    [Header("Event System (Scriptable Objects)")]
+    // Drag your "NormalDaySchedule" asset here
+    public DailySchedule activeSchedule;
+
     [Header("Skybox Settings")]
     public Material skyboxMaterial;
     public List<SkyPhase> skyPhases;
 
     [Header("Cloud Animation")]
-    [Tooltip("Controls the Tilt (Up/Down) of clouds over time. Set keys between 30 and 50.")]
     public AnimationCurve skyTiltCurve;
-    [Tooltip("How fast the clouds spin (Wind speed).")]
     public float skySpinSpeed = 0.5f;
     private float currentSpin = 0f;
 
@@ -50,30 +52,55 @@ public class DayNightController : MonoBehaviour
     public TextMeshProUGUI timeDisplay;
 
     private float timeMultiplier;
+    private int _lastHour = -1; // Tracks when the hour changes
 
     private void Start()
     {
         timeMultiplier = 1f / (realSecondsPerInterval * 6f);
         RenderSettings.ambientMode = UnityEngine.Rendering.AmbientMode.Flat;
         skyPhases.Sort((p1, p2) => p1.hour.CompareTo(p2.hour));
+
+        // Initialize lastHour so we don't trigger events immediately on Start
+        _lastHour = Mathf.FloorToInt(currentTime);
     }
 
     private void Update()
     {
+        // 1. Increment Time
         currentTime += Time.deltaTime * timeMultiplier;
         if (currentTime >= 24f) currentTime %= 24f;
 
+        // 2. Check for Event Triggers (Hour Change)
+        CheckForScheduleEvents();
+
+        // 3. Visual Updates
         UpdateSkyboxBlend();
         UpdateLighting();
         UpdateRotation();
         UpdateUI();
     }
 
+    private void CheckForScheduleEvents()
+    {
+        int currentHourInt = Mathf.FloorToInt(currentTime);
+
+        // Only run this logic if the hour has changed since the last frame
+        if (currentHourInt != _lastHour)
+        {
+            _lastHour = currentHourInt;
+
+            // Notify the ScriptableObject Schedule
+            if (activeSchedule != null)
+            {
+                activeSchedule.CheckSchedule(currentHourInt);
+            }
+        }
+    }
+
     private void UpdateSkyboxBlend()
     {
         if (skyboxMaterial == null || skyPhases.Count < 2) return;
 
-        // 1. Calculate Phase Blending (Existing Logic)
         SkyPhase currentPhase = skyPhases[0];
         SkyPhase nextPhase = skyPhases[0];
 
@@ -105,18 +132,14 @@ public class DayNightController : MonoBehaviour
 
         float blend = Mathf.Clamp01(timeSincePhaseStart / duration);
 
-        // 2. Apply Textures & Tint
         skyboxMaterial.SetTexture("_TexA", currentPhase.skyTexture);
         skyboxMaterial.SetTexture("_TexB", nextPhase.skyTexture);
         skyboxMaterial.SetFloat("_Blend", blend);
         skyboxMaterial.SetColor("_Tint", Color.Lerp(currentPhase.tintColor, nextPhase.tintColor, blend));
 
-        // A. Tilt (Up/Down movement based on Hour)
         float tiltValue = skyTiltCurve.Evaluate(currentTime / 24f);
         skyboxMaterial.SetFloat("_Tilt", tiltValue);
 
-        // B. Spin (Wind movement)
-        // Increases continuously so clouds drift sideways
         currentSpin += Time.deltaTime * skySpinSpeed;
         skyboxMaterial.SetFloat("_Rotation", currentSpin % 360f);
     }
@@ -129,14 +152,21 @@ public class DayNightController : MonoBehaviour
         {
             sunLight.color = sunColor.Evaluate(time01);
             sunLight.intensity = Mathf.Clamp(sunIntensity.Evaluate(time01), 0f, 1f);
-            sunLight.gameObject.SetActive(sunLight.intensity > 0.01f);
+
+            // Optimization: Disable GameObject when light is off to save performance
+            bool isSunActive = sunLight.intensity > 0.01f;
+            if (sunLight.gameObject.activeSelf != isSunActive)
+                sunLight.gameObject.SetActive(isSunActive);
         }
 
         if (moonLight != null)
         {
             moonLight.color = moonColor.Evaluate(time01);
             moonLight.intensity = Mathf.Clamp(moonIntensity.Evaluate(time01), 0f, 1f);
-            moonLight.gameObject.SetActive(moonLight.intensity > 0.01f);
+
+            bool isMoonActive = moonLight.intensity > 0.01f;
+            if (moonLight.gameObject.activeSelf != isMoonActive)
+                moonLight.gameObject.SetActive(isMoonActive);
         }
 
         RenderSettings.ambientLight = ambientColor.Evaluate(time01);
@@ -145,6 +175,8 @@ public class DayNightController : MonoBehaviour
     private void UpdateRotation()
     {
         float baseY = CalculateBaseYAngle();
+
+        // Optional: I kept your vibration logic, but consider removing it if shadows jitter too much
         float vibration = Mathf.Sin(Time.time * vibrationSpeed) * vibrationAmount;
         float finalY = baseY + vibration;
 
