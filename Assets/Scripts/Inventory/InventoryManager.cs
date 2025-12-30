@@ -77,6 +77,8 @@ public class InventoryManager : MonoBehaviour
     private InputAction _closeAction;
     private InputAction _contextAction;
 
+    private StarterAssets.ThirdPersonController playerController;
+
     [System.Serializable]
     public class InventorySlotData
     {
@@ -136,6 +138,8 @@ public class InventoryManager : MonoBehaviour
         if (player)
         {
             playerTransform = player.transform;
+            playerController = player.GetComponent<StarterAssets.ThirdPersonController>();
+
             if (player.TryGetComponent(out _playerInput))
             {
                 _openAction = _playerInput.actions.FindAction("Player/InventoryToggle");
@@ -149,7 +153,10 @@ public class InventoryManager : MonoBehaviour
             }
             player.TryGetComponent(out _starterInputs);
         }
-
+        if (handTransform != null)
+        {
+            handTransform.gameObject.SetActive(true);
+        }
         if (gridContainer)
             gridContainer.TryGetComponent(out gridCanvasGroup);
 
@@ -197,7 +204,13 @@ public class InventoryManager : MonoBehaviour
         return -1;
     }
 
-    private void OnOpenInput(InputAction.CallbackContext context) { if (!isTransitioning && !isInventoryOpen) StartCoroutine(ToggleRoutine(true)); }
+    private void OnOpenInput(InputAction.CallbackContext context)
+    {
+        // CHECK: If player is locked (picking up item), DO NOT open inventory
+        if (playerController != null && playerController.IsInputLocked) return;
+
+        if (!isTransitioning && !isInventoryOpen) StartCoroutine(ToggleRoutine(true));
+    }
 
     private IEnumerator ToggleRoutine(bool open)
     {
@@ -335,8 +348,22 @@ public class InventoryManager : MonoBehaviour
     {
         currentEquippedFavIndex = favIndex;
         int invIndex = favoriteSlots[favIndex];
-        if (invIndex != -1 && invIndex < inventorySlots.Count && !inventorySlots[invIndex].IsEmpty) EquipItem(invIndex);
-        else { UnequipItem(); Debug.Log($"Favorite Slot {favIndex + 1} is empty."); }
+
+        // Trigger the animation whenever we try to swap favorites
+        if (playerTransform.TryGetComponent(out ThirdPersonController controller))
+        {
+            controller.TriggerActionAnimation("ShowItem");
+        }
+
+        if (invIndex != -1 && invIndex < inventorySlots.Count && !inventorySlots[invIndex].IsEmpty)
+        {
+            EquipItem(invIndex);
+        }
+        else
+        {
+            UnequipItem();
+            Debug.Log($"Favorite Slot {favIndex + 1} is empty.");
+        }
     }
 
     public void OnFavoriteItem(int invIndex)
@@ -638,6 +665,15 @@ public class InventoryManager : MonoBehaviour
         if (index >= 0 && index < slotImages.Count && slotImages[index])
         {
             slotImages[index].color = color;
+        }
+    }
+
+    private void LateUpdate()
+    {
+        // Force the hand enabled every frame, AFTER the animation tries to turn it off
+        if (handTransform != null && !handTransform.gameObject.activeSelf)
+        {
+            handTransform.gameObject.SetActive(true);
         }
     }
 }

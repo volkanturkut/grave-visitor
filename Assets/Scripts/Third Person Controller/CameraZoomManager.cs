@@ -2,6 +2,7 @@ using UnityEngine;
 using Cinemachine;
 using StarterAssets;
 using UnityEngine.InputSystem;
+using System.Collections;
 
 [RequireComponent(typeof(StarterAssetsInputs))]
 [RequireComponent(typeof(PlayerInput))]
@@ -11,13 +12,16 @@ public class CameraZoomManager : MonoBehaviour
     public CinemachineVirtualCamera standardCamera;
     public CinemachineVirtualCamera zoomedCamera;
 
+    [Header("Timing")]
+    public float cameraBlendTime = 0.5f;
+    public float shyAnimationDelay = 1.5f;
+
     [Header("Settings - Zoom Toggle")]
     public float sensitivity = 10.0f;
     public float dragThreshold = 0.5f;
     public float stickThreshold = 0.7f;
 
     [Header("Settings - Rotation Fix")]
-    [Tooltip("Set this to 25 to force the camera to look down.")]
     public float zoomPitchOffset = 25.0f;
 
     [Header("Settings - Peek / Lean")]
@@ -26,26 +30,27 @@ public class CameraZoomManager : MonoBehaviour
     public float maxLeanOffset = 0.35f;
     public float leanSensitivity = 2.0f;
 
-    // References
     private StarterAssetsInputs _input;
     private PlayerInput _playerInput;
     private CinemachineFramingTransposer _zoomedFramer;
+    private ThirdPersonController _thirdPersonController;
 
-    // State
     private float _dragAccumulatorY = 0f;
     private float _leanAccumulatorX = 0f;
     private bool _wasDragging = false;
     private bool _isZoomed = false;
 
-    // Smooth Damping Variables
     private float _currentLeanRot;
     private float _currentLeanOffset;
     private float _defaultOffsetX;
+
+    private Coroutine _zoomCoroutine;
 
     private void Start()
     {
         _input = GetComponent<StarterAssetsInputs>();
         _playerInput = GetComponent<PlayerInput>();
+        _thirdPersonController = GetComponent<ThirdPersonController>();
 
         if (zoomedCamera != null)
         {
@@ -56,7 +61,9 @@ public class CameraZoomManager : MonoBehaviour
                 _currentLeanOffset = _defaultOffsetX;
             }
         }
-        SetZoom(false);
+
+        // Force initial state
+        SetZoom(false, true);
     }
 
     private void Update()
@@ -74,7 +81,6 @@ public class CameraZoomManager : MonoBehaviour
     {
         if (_playerInput.currentControlScheme != "KeyboardMouse") return;
 
-        // 1. If Right Click is HELD
         if (_input.cameraDrag)
         {
             if (!_wasDragging)
@@ -85,12 +91,9 @@ public class CameraZoomManager : MonoBehaviour
             }
 
             float dt = Time.deltaTime;
-
-            // --- ZOOM LOGIC (Always Allow) ---
             _dragAccumulatorY += _input.look.y * sensitivity * dt;
 
-            // --- LEAN LOGIC (Only Allow if STANDING STILL) ---
-            if (_input.move == Vector2.zero && _isZoomed)
+            if (_input.move.sqrMagnitude < 0.01f && _isZoomed)
             {
                 _leanAccumulatorX += _input.look.x * leanSensitivity * dt;
                 _leanAccumulatorX = Mathf.Clamp(_leanAccumulatorX, -1.0f, 1.0f);
@@ -100,7 +103,6 @@ public class CameraZoomManager : MonoBehaviour
                 _leanAccumulatorX = Mathf.MoveTowards(_leanAccumulatorX, 0f, dt * 5.0f);
             }
 
-            // Conflict Check
             if (Mathf.Abs(_dragAccumulatorY) > dragThreshold)
             {
                 _leanAccumulatorX = 0f;
@@ -110,9 +112,7 @@ public class CameraZoomManager : MonoBehaviour
         }
         else
         {
-            // 2. Button Released
             _leanAccumulatorX = 0f;
-
             if (_wasDragging)
             {
                 _wasDragging = false;
@@ -135,36 +135,25 @@ public class CameraZoomManager : MonoBehaviour
         float y = _input.look.y;
         float absX = Mathf.Abs(x);
         float absY = Mathf.Abs(y);
-
-        // Define a "strictness" factor. 
-        // 1.2 means the main direction must be 20% stronger than the other.
         float coneBias = 1.2f;
 
-        // 1. ZOOM LOGIC (Vertical Cone)
-        // Only zoom if Y is strong AND Y is significantly larger than X
         bool isVerticalCone = absY > (absX * coneBias);
 
         if (isVerticalCone)
         {
-            if (y > stickThreshold) SetZoom(true);        // Strict UP
-            else if (y < -stickThreshold) SetZoom(false); // Strict DOWN
+            if (y > stickThreshold) SetZoom(true);
+            else if (y < -stickThreshold) SetZoom(false);
         }
 
-        // 2. LEAN LOGIC (Horizontal Cone)
         if (_isZoomed)
         {
-            // Only lean if X is strong AND X is significantly larger than Y
             bool isHorizontalCone = absX > (absY * coneBias);
-            bool outsideDeadzone = absX > 0.2f;
-
-            if (outsideDeadzone && isHorizontalCone)
+            if (absX > 0.2f && isHorizontalCone)
             {
-                _leanAccumulatorX = x;
-                _leanAccumulatorX = Mathf.Clamp(_leanAccumulatorX, -1.0f, 1.0f);
+                _leanAccumulatorX = Mathf.Clamp(x, -1.0f, 1.0f);
             }
             else
             {
-                // Reset if diagonal, vertical, or released
                 _leanAccumulatorX = 0f;
             }
         }
@@ -173,48 +162,62 @@ public class CameraZoomManager : MonoBehaviour
     private void ApplyLeanAndOffset()
     {
         if (!_isZoomed || _zoomedFramer == null) return;
+        if (_input.move != Vector2.zero) _leanAccumulatorX = 0f;
 
-        // CRITICAL: If moving (WASD), force lean to 0
-        if (_input.move != Vector2.zero)
-        {
-            _leanAccumulatorX = 0f;
-        }
-
-        // Calculate Targets
         float targetLeanY = -_leanAccumulatorX * maxLeanAngle;
         float targetOffsetX = _defaultOffsetX + (_leanAccumulatorX * maxLeanOffset);
 
         _currentLeanRot = Mathf.Lerp(_currentLeanRot, targetLeanY, Time.deltaTime * leanSpeed);
         _currentLeanOffset = Mathf.Lerp(_currentLeanOffset, targetOffsetX, Time.deltaTime * leanSpeed);
 
-        // Apply Rotation (Fixed 25 + Lean)
         Vector3 currentEuler = zoomedCamera.transform.localEulerAngles;
         zoomedCamera.transform.localRotation = Quaternion.Euler(zoomPitchOffset, _currentLeanRot, currentEuler.z);
-
-        // Apply Offset
         _zoomedFramer.m_TrackedObjectOffset.x = _currentLeanOffset;
     }
 
-    private void SetZoom(bool isZoomed)
+    // --- UPDATED LOGIC HERE ---
+    private void SetZoom(bool isZoomed, bool force = false)
     {
+        // Guard Clause: Only stop redundant "True" calls. 
+        // We ALWAYS allow "False" calls to pass through to fix the stuck animation bug.
+        if (!force && _isZoomed == isZoomed && isZoomed == true) return;
+
         _isZoomed = isZoomed;
+
+        // 1. Always stop any pending "Shy" timer
+        if (_zoomCoroutine != null) StopCoroutine(_zoomCoroutine);
 
         if (isZoomed)
         {
+            // Zoom IN: Start the timer
             zoomedCamera.Priority = 20;
             standardCamera.Priority = 10;
+            _zoomCoroutine = StartCoroutine(ZoomTransitionRoutine());
         }
         else
         {
+            // Zoom OUT: Force Cancel IMMEDIATELY (No Coroutine)
+            Debug.Log("Zoom Out: Cancelling Shy Animation"); // Check your Console for this!
+            if (_thirdPersonController) _thirdPersonController.SetZoomAnimation(false);
+
             zoomedCamera.Priority = 10;
             standardCamera.Priority = 20;
 
-            // Reset accumulators
             _leanAccumulatorX = 0f;
             _currentLeanRot = 0f;
             _currentLeanOffset = _defaultOffsetX;
+        }
+    }
 
-            // We do NOT reset rotation/offset here to prevent glitches
+    private IEnumerator ZoomTransitionRoutine()
+    {
+        // Wait for Blend + Extra Delay
+        yield return new WaitForSeconds(cameraBlendTime + shyAnimationDelay);
+
+        // Only trigger shy if we are STILL zoomed and NOT moving
+        if (_isZoomed && _thirdPersonController && _input.move.sqrMagnitude < 0.01f)
+        {
+            _thirdPersonController.SetZoomAnimation(true);
         }
     }
 }

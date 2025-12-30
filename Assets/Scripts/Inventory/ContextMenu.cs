@@ -76,6 +76,7 @@ public class ContextMenu : MonoBehaviour
         if (useButton.gameObject.activeSelf) useButton.Select();
         else if (dropButton.gameObject.activeSelf) dropButton.Select();
         else if (splitButton.gameObject.activeSelf) splitButton.Select();
+        else if (favButton.gameObject.activeSelf) favButton.Select();
     }
 
     private void UpdateFavoriteButtonText(int slotIndex)
