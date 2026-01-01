@@ -905,10 +905,10 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 3604012293512381766}
   serializedVersion: 2
-  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 0.55, y: 0.55, z: 0.55}
-  m_ConstrainProportionsScale: 1
+  m_ConstrainProportionsScale: 0
   m_Children:
   - {fileID: 8870197272843758111}
   - {fileID: 6859721814808839182}
@@ -923,7 +923,7 @@ Animator:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 3604012293512381766}
   m_Enabled: 1
-  m_Avatar: {fileID: 9000000, guid: d23d81550e9c29249a962708746b73c6, type: 3}
+  m_Avatar: {fileID: 9000000, guid: dccfeec892dab15479ea322a1ee61f23, type: 3}
   m_Controller: {fileID: 9100000, guid: 40db3173a05ae3242b1c182a09b0a183, type: 2}
   m_CullingMode: 1
   m_UpdateMode: 0
@@ -1170,10 +1170,12 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   standardCamera: {fileID: 0}
   zoomedCamera: {fileID: 0}
+  cameraBlendTime: 0.5
+  shyAnimationDelay: 1.5
   sensitivity: 10
   dragThreshold: 0.5
   stickThreshold: 0.7
-  zoomPitchOffset: 25
+  zoomPitchOffset: 15
   leanSpeed: 5
   maxLeanAngle: 12.5
   maxLeanOffset: 0.35
@@ -1196,6 +1198,8 @@ MonoBehaviour:
     serializedVersion: 2
     m_Bits: 64
   playerCamera: {fileID: 0}
+  pickupGrabTime: 0.5
+  pickupTotalDuration: 1
   inventoryManager: {fileID: 0}
 --- !u!1 &3630989699124846234
 GameObject:
