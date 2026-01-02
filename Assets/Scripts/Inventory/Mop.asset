@@ -1,0 +1,27 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 6594be195ca64d846a6fa9dec3eeea05, type: 3}
+  m_Name: Mop
+  m_EditorClassIdentifier: 
+  itemName: Mop
+  icon: {fileID: 21300000, guid: 9a420bb2d3c997143ac248942d105119, type: 3}
+  isStackable: 0
+  maxStack: 1
+  itemType: 1
+  prefab: {fileID: 1707965447010953679, guid: 760d90be0c68ac44f980a265ed91284d, type: 3}
+  equippedPrefab: {fileID: 2793734309486779519, guid: 3a15b2d0c16e3fa479635b15d0cd0a4d,
+    type: 3}
+  gripPosition: {x: 0, y: 0, z: 0}
+  gripRotation: {x: 0, y: 0, z: 0}
+  canUse: 1
+  canDrop: 1
+  canFavorite: 1

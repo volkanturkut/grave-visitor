@@ -1,4 +1,4 @@
-using Cinemachine;
+﻿using Cinemachine;
 using StarterAssets;
 using System.Collections;
 using System.Collections.Generic;
@@ -30,7 +30,15 @@ public class InventoryManager : MonoBehaviour
     [Header("Scene References")]
     public CinemachineVirtualCamera playerCam;
     public CinemachineVirtualCamera inventoryCam;
-    public Transform handTransform;
+
+    [Header("Hand References")] // --- GÜNCELLENEN KISIM ---
+    public Transform rightHandTransform; // Inspector'da Sağ El Kemiğini atayın
+    public Transform leftHandTransform;  // Inspector'da Sol El Kemiğini atayın
+
+    [Header("Animator Layer Names")]
+    // Animator'daki Layer isimlerinizle BİREBİR aynı olmalı
+    public string rightArmLayerName = "RightArmLayer";
+    public string leftArmLayerName = "LeftArmLayer";
 
     [Header("New UI Components")]
     public ContextMenu contextMenuScript;
@@ -48,6 +56,9 @@ public class InventoryManager : MonoBehaviour
     private int currentEquippedSlot = -1;
     private GameObject currentEquippedObject;
     private RectTransform tooltipRect;
+
+    // Animasyon Takibi
+    private string currentActiveAnimParam = "";
 
     // State
     private bool isInventoryOpen;
@@ -153,15 +164,15 @@ public class InventoryManager : MonoBehaviour
             }
             player.TryGetComponent(out _starterInputs);
         }
-        if (handTransform != null)
+
+        // El transformları kontrolü
+        if (rightHandTransform == null || leftHandTransform == null)
         {
-            handTransform.gameObject.SetActive(true);
+            Debug.LogWarning("InventoryManager: Lütfen Sağ ve Sol el transformlarını atayın!");
         }
+
         if (gridContainer)
             gridContainer.TryGetComponent(out gridCanvasGroup);
-
-        if (!gridCanvasGroup)
-            Debug.LogError("InventoryManager: Please add a CanvasGroup component to your GridContainer object!");
     }
 
     private void InitializeSlots()
@@ -206,9 +217,7 @@ public class InventoryManager : MonoBehaviour
 
     private void OnOpenInput(InputAction.CallbackContext context)
     {
-        // CHECK: If player is locked (picking up item), DO NOT open inventory
         if (playerController != null && playerController.IsInputLocked) return;
-
         if (!isTransitioning && !isInventoryOpen) StartCoroutine(ToggleRoutine(true));
     }
 
@@ -241,25 +250,16 @@ public class InventoryManager : MonoBehaviour
             if (uiSlotObjects.Count > 0)
             {
                 EventSystem.current.SetSelectedGameObject(null);
-
                 if (savedSelectionIndex < 0 || savedSelectionIndex >= uiSlotObjects.Count)
                     savedSelectionIndex = 0;
-
                 EventSystem.current.SetSelectedGameObject(uiSlotObjects[savedSelectionIndex]);
             }
         }
         else
         {
             int currentSlot = GetSelectedSlotIndex();
-
-            if (currentSlot != -1)
-            {
-                savedSelectionIndex = currentSlot;
-            }
-            else if (lastSelectedSlot != -1)
-            {
-                savedSelectionIndex = lastSelectedSlot;
-            }
+            if (currentSlot != -1) savedSelectionIndex = currentSlot;
+            else if (lastSelectedSlot != -1) savedSelectionIndex = lastSelectedSlot;
 
             CloseContextMenu(false);
             inventoryPanel.SetActive(false);
@@ -297,7 +297,6 @@ public class InventoryManager : MonoBehaviour
                     {
                         slotScript.iconImage.transform.SetParent(slotScript.transform);
                     }
-
                     slotScript.iconImage.rectTransform.anchoredPosition = Vector2.zero;
                     slotScript.iconImage.rectTransform.localScale = Vector3.one;
                 }
@@ -310,21 +309,12 @@ public class InventoryManager : MonoBehaviour
         if (Gamepad.current != null)
         {
             Vector2 dpad = Gamepad.current.dpad.ReadValue();
-
-            if (dpad.sqrMagnitude < 0.1f)
-            {
-                dpadPressed = false;
-            }
+            if (dpad.sqrMagnitude < 0.1f) dpadPressed = false;
             else if (!dpadPressed)
             {
                 if (dpad.x > 0.5f) { CycleFavorite(1); dpadPressed = true; }
                 else if (dpad.x < -0.5f) { CycleFavorite(-1); dpadPressed = true; }
-                else if (dpad.y < -0.5f)
-                {
-                    UnequipItem();
-                    currentEquippedFavIndex = -1;
-                    dpadPressed = true;
-                }
+                else if (dpad.y < -0.5f) { UnequipItem(); currentEquippedFavIndex = -1; dpadPressed = true; }
             }
         }
         if (Keyboard.current != null)
@@ -349,8 +339,7 @@ public class InventoryManager : MonoBehaviour
         currentEquippedFavIndex = favIndex;
         int invIndex = favoriteSlots[favIndex];
 
-        // Trigger the animation whenever we try to swap favorites
-        if (playerTransform.TryGetComponent(out ThirdPersonController controller))
+        if (playerTransform.TryGetComponent(out StarterAssets.ThirdPersonController controller))
         {
             controller.TriggerActionAnimation("ShowItem");
         }
@@ -362,7 +351,6 @@ public class InventoryManager : MonoBehaviour
         else
         {
             UnequipItem();
-            Debug.Log($"Favorite Slot {favIndex + 1} is empty.");
         }
     }
 
@@ -385,24 +373,65 @@ public class InventoryManager : MonoBehaviour
         return -1;
     }
 
+    // --- ÖNEMLİ DEĞİŞİKLİK: EquipItem ---
     public void EquipItem(int index)
     {
-        if (!handTransform) { Debug.LogError("Assign Hand Transform in InventoryManager Inspector!"); return; }
+        // 1. Kontrol
+        if (rightHandTransform == null || leftHandTransform == null)
+        {
+            Debug.LogError("ELLER ATANMAMIŞ! InventoryManager Inspector'ından Right ve Left Hand Transformlarını atayın.");
+            return;
+        }
+
         InventorySlotData slot = inventorySlots[index];
         if (slot.IsEmpty) return;
 
+        // 2. Önceki eşyayı temizle
         UnequipItem();
         currentEquippedSlot = index;
 
-        // Choose correct prefab
+        // 3. Hangi El?
+        Transform targetHand = (slot.itemData.handType == ItemData.EquipHand.Left) ? leftHandTransform : rightHandTransform;
+
+        // 4. Animasyon Layer ve Bool Ayarları
+        if (playerController)
+        {
+            Animator anim = playerController.GetAnimator();
+            if (anim)
+            {
+                // A. Bool'u aç
+                if (!string.IsNullOrEmpty(slot.itemData.holdAnimBool))
+                {
+                    anim.SetBool(slot.itemData.holdAnimBool, true);
+                    currentActiveAnimParam = slot.itemData.holdAnimBool;
+                }
+
+                // B. Layer Ağırlıklarını Değiştir
+                int rightIndex = anim.GetLayerIndex(rightArmLayerName);
+                int leftIndex = anim.GetLayerIndex(leftArmLayerName);
+
+                if (slot.itemData.handType == ItemData.EquipHand.Left)
+                {
+                    // Sol Katmanı Aç, Sağı Kapat
+                    if (leftIndex != -1) anim.SetLayerWeight(leftIndex, 1f);
+                    if (rightIndex != -1) anim.SetLayerWeight(rightIndex, 0f);
+                }
+                else
+                {
+                    // Sağ Katmanı Aç, Solu Kapat
+                    if (rightIndex != -1) anim.SetLayerWeight(rightIndex, 1f);
+                    if (leftIndex != -1) anim.SetLayerWeight(leftIndex, 0f);
+                }
+            }
+        }
+
+        // 5. Objenin Yaratılması
         GameObject prefabToSpawn = slot.itemData.equippedPrefab;
         if (prefabToSpawn == null) prefabToSpawn = slot.itemData.prefab;
 
         if (prefabToSpawn)
         {
-            currentEquippedObject = Instantiate(prefabToSpawn, handTransform);
-
-            // FIX: Apply the offsets from ItemData
+            currentEquippedObject = Instantiate(prefabToSpawn, targetHand);
             currentEquippedObject.transform.localPosition = slot.itemData.gripPosition;
             currentEquippedObject.transform.localRotation = Quaternion.Euler(slot.itemData.gripRotation);
 
@@ -411,8 +440,24 @@ public class InventoryManager : MonoBehaviour
         }
     }
 
+    // --- ÖNEMLİ DEĞİŞİKLİK: UnequipItem ---
     private void UnequipItem()
     {
+        // 1. Animasyonu Durdur
+        if (!string.IsNullOrEmpty(currentActiveAnimParam) && playerController)
+        {
+            Animator anim = playerController.GetAnimator();
+            if (anim)
+            {
+                anim.SetBool(currentActiveAnimParam, false);
+
+                // İsteğe bağlı: Eşya bırakılınca layer ağırlıklarını da sıfırlayabilirsiniz
+                // Ama genellikle sadece bool'u false yapmak (Exit Time yoksa) yeterlidir.
+            }
+            currentActiveAnimParam = "";
+        }
+
+        // 2. Objeyi Yok Et
         if (currentEquippedObject)
         {
             Destroy(currentEquippedObject);
@@ -447,15 +492,21 @@ public class InventoryManager : MonoBehaviour
         int favIndex = GetFavoriteIndex(index);
         if (favIndex != -1) favoriteSlots[favIndex] = -1;
 
-        // FIX: Always use the 'prefab' (Drop version) for the world
         if (slot.itemData.prefab && playerTransform)
         {
-            Vector3 basePos = playerTransform.position + (playerTransform.forward * 1.5f) + new Vector3(0, 0.25f, 0);
-            float randomX = Random.Range(-0.5f, 0.5f);
-            float randomZ = Random.Range(-0.5f, 0.5f);
-            Vector3 dropPos = basePos + new Vector3(randomX, 0, randomZ);
+            // RAYCAST GÜVENLİK KONTROLÜ
+            Vector3 spawnOrigin = playerTransform.position + Vector3.up;
+            Vector3 dropDirection = playerTransform.forward;
+            float dropDistance = 1.5f;
 
-            // Explicitly use .prefab here (World Model)
+            if (Physics.Raycast(spawnOrigin, dropDirection, out RaycastHit hit, dropDistance))
+            {
+                dropDistance = hit.distance - 0.2f;
+            }
+            if (dropDistance < 0.2f) dropDistance = 0.2f;
+
+            Vector3 dropPos = playerTransform.position + (dropDirection * dropDistance) + new Vector3(0, 0.25f, 0);
+
             GameObject droppedObj = Instantiate(slot.itemData.prefab, dropPos, Quaternion.identity);
 
             if (droppedObj.TryGetComponent(out WorldItem worldItem))
@@ -500,14 +551,10 @@ public class InventoryManager : MonoBehaviour
     public void SwapItems(int indexA, int indexB)
     {
         (inventorySlots[indexA], inventorySlots[indexB]) = (inventorySlots[indexB], inventorySlots[indexA]);
-
         if (currentEquippedSlot == indexA) currentEquippedSlot = indexB;
         else if (currentEquippedSlot == indexB) currentEquippedSlot = indexA;
-
         RefreshUI();
     }
-
-    // --- INPUT LOGIC ---
 
     private void HandleInputLogic()
     {
@@ -523,17 +570,13 @@ public class InventoryManager : MonoBehaviour
                 if (selectedObj)
                 {
                     gamepadMovingIcon.transform.position = selectedObj.transform.position;
-
                     if (selectedObj.TryGetComponent(out InventorySlotUI _))
                     {
                         int targetIndex = uiSlotObjects.IndexOf(selectedObj);
                         if (targetIndex != -1)
                         {
                             string itemName = "";
-                            if (inventorySlots[targetIndex].itemData != null)
-                            {
-                                itemName = inventorySlots[targetIndex].itemData.itemName;
-                            }
+                            if (inventorySlots[targetIndex].itemData != null) itemName = inventorySlots[targetIndex].itemData.itemName;
                             ShowTooltip(itemName, selectedObj.transform.position);
                         }
                     }
@@ -589,7 +632,6 @@ public class InventoryManager : MonoBehaviour
         if (currentIndex != -1 && !inventorySlots[currentIndex].IsEmpty)
         {
             CloseContextMenu(false); isDragging = true; gamepadSourceIndex = currentIndex;
-
             if (uiSlotObjects[currentIndex].TryGetComponent(out InventorySlotUI slotUI))
             {
                 if (slotUI.iconImage)
@@ -630,7 +672,6 @@ public class InventoryManager : MonoBehaviour
                     else SwapItems(gamepadSourceIndex, targetIndex);
                 }
                 else SwapItems(gamepadSourceIndex, targetIndex);
-
                 if (!inventorySlots[targetIndex].IsEmpty) ShowTooltip(inventorySlots[targetIndex].itemData.itemName, uiSlotObjects[targetIndex].transform.position);
                 else HideTooltip();
                 RefreshUI();
@@ -651,9 +692,7 @@ public class InventoryManager : MonoBehaviour
         tooltipPanel.SetActive(true);
         tooltipText.text = name;
         tooltipPanel.transform.rotation = Quaternion.Euler(-180, 0, 0);
-
         if (tooltipRect) UnityEngine.UI.LayoutRebuilder.ForceRebuildLayoutImmediate(tooltipRect);
-
         tooltipPanel.transform.position = position;
         tooltipPanel.transform.Translate(tooltipOffset.x, tooltipOffset.y, 0, Space.Self);
     }
@@ -665,15 +704,6 @@ public class InventoryManager : MonoBehaviour
         if (index >= 0 && index < slotImages.Count && slotImages[index])
         {
             slotImages[index].color = color;
-        }
-    }
-
-    private void LateUpdate()
-    {
-        // Force the hand enabled every frame, AFTER the animation tries to turn it off
-        if (handTransform != null && !handTransform.gameObject.activeSelf)
-        {
-            handTransform.gameObject.SetActive(true);
         }
     }
 }
