@@ -20,8 +20,10 @@ MonoBehaviour:
   prefab: {fileID: 6221100258830058985, guid: b763ece8444ace3428b55a032ad44b53, type: 3}
   equippedPrefab: {fileID: 5876691277991210969, guid: 718546dc313eaac439ed76dfe22f52fa,
     type: 3}
+  handType: 0
   gripPosition: {x: 0, y: 0, z: 0}
   gripRotation: {x: 0, y: 0, z: 0}
+  holdAnimBool: IsHoldingBrush
   canUse: 1
   canDrop: 1
   canFavorite: 1

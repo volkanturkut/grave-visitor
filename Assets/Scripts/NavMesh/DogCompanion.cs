@@ -19,7 +19,10 @@ public class DogCompanion : MonoBehaviour, IInteractable
     public float runSpeed = 5.5f;
     public float stopDistance = 2.5f;
     public float sitDelay = 10f;
-    public float rotationSpeed = 5f; // New setting for turn smoothness
+    public float rotationSpeed = 5f;
+
+    [Tooltip("How directly must the player face the dog? 0.5 is approx 60 degrees.")]
+    public float interactFaceThreshold = 0.5f; // NEW SETTING
 
     private NavMeshAgent _agent;
     private Animator _animator;
@@ -40,11 +43,9 @@ public class DogCompanion : MonoBehaviour, IInteractable
         _animator = GetComponent<Animator>();
         _audioSource = GetComponent<AudioSource>();
 
-        // IMPORTANT: We handle rotation manually to prevent sliding
         _agent.updateRotation = false;
         _agent.stoppingDistance = stopDistance;
 
-        // Auto-find references
         if (playerTransform == null)
         {
             GameObject player = GameObject.FindGameObjectWithTag("Player");
@@ -68,22 +69,17 @@ public class DogCompanion : MonoBehaviour, IInteractable
         if (playerTransform == null) return;
 
         MoveLogic();
-        RotationLogic(); // New Function
+        RotationLogic();
         SitLogic();
     }
 
     private void MoveLogic()
     {
         float distanceToPlayer = Vector3.Distance(transform.position, playerTransform.position);
-
-        // Input Checks
         bool isSprinting = _playerInputs != null && _playerInputs.sprint;
         bool isMovingInput = _playerInputs != null && _playerInputs.move != Vector2.zero;
-
-        // 1. Determine Target Speed
         float targetSpeed = (isSprinting && isMovingInput) ? runSpeed : walkSpeed;
 
-        // 2. Move Agent
         if (distanceToPlayer > stopDistance)
         {
             _agent.isStopped = false;
@@ -93,8 +89,6 @@ public class DogCompanion : MonoBehaviour, IInteractable
         else
         {
             _agent.isStopped = true;
-            // Note: We do NOT set animator speed to 0 here immediately
-            // We let RotationLogic handle it in case we are turning in place
         }
     }
 
@@ -104,51 +98,38 @@ public class DogCompanion : MonoBehaviour, IInteractable
         bool isMoving = _agent.velocity.magnitude > 0.1f;
         float animatorSpeed = 0f;
 
-        // Case A: Moving - Look where we are going
         if (isMoving)
         {
             targetDirection = _agent.velocity.normalized;
             animatorSpeed = _agent.velocity.magnitude;
         }
-        // Case B: Stopped - Look at the Player
         else
         {
             Vector3 directionToPlayer = playerTransform.position - transform.position;
-            // Only try to look if player is slightly away to avoid jitter
             if (directionToPlayer.magnitude > 0.5f)
             {
                 targetDirection = directionToPlayer.normalized;
             }
         }
 
-        // Apply Rotation
         if (targetDirection != Vector3.zero)
         {
-            targetDirection.y = 0; // Keep dog upright
+            targetDirection.y = 0;
             Quaternion targetRotation = Quaternion.LookRotation(targetDirection);
-
-            // Calculate how much we need to turn this frame
             float angleDifference = Quaternion.Angle(transform.rotation, targetRotation);
-
-            // Smoothly rotate
             transform.rotation = Quaternion.Slerp(transform.rotation, targetRotation, Time.deltaTime * rotationSpeed);
 
-            // FOOT SHUFFLE TRICK:
-            // If we are NOT moving (velocity is 0) but we ARE turning (angle > 10 degrees),
-            // force the walk animation to play slowly so the feet move.
             if (!isMoving && angleDifference > 5f)
             {
-                animatorSpeed = 1.0f; // Fake walk speed to make feet shuffle
+                animatorSpeed = 1.0f;
             }
         }
 
-        // Send final speed to Animator (Smoothly)
         _animator.SetFloat(_animIDSpeed, animatorSpeed, 0.1f, Time.deltaTime);
     }
 
     private void SitLogic()
     {
-        // If moving or turning significantly, reset sit
         if (_animator.GetFloat(_animIDSpeed) > 0.1f)
         {
             _sitTimer = 0f;
@@ -160,7 +141,6 @@ public class DogCompanion : MonoBehaviour, IInteractable
             return;
         }
 
-        // If Player is also stopped, count down
         float playerSpeed = playerController.GetComponent<CharacterController>().velocity.magnitude;
         if (playerSpeed < 0.1f)
         {
@@ -177,9 +157,28 @@ public class DogCompanion : MonoBehaviour, IInteractable
         }
     }
 
-    // --- IInteractable Implementation ---
+    // --- UPDATED INTERACT METHOD ---
     public void Interact(Transform interactorTransform)
     {
+        // 1. Calculate direction from Player to Dog
+        Vector3 dirToDog = (transform.position - interactorTransform.position).normalized;
+
+        // 2. Get Player's Forward direction
+        Vector3 playerForward = interactorTransform.forward;
+
+        // 3. Ignore Height (Y axis) for a fair check on uneven ground
+        dirToDog.y = 0;
+        playerForward.y = 0;
+
+        // 4. Dot Product Check
+        // 1.0 means looking exactly at dog. 0.0 means looking 90 degrees away.
+        // 0.5f is roughly a 60-degree cone in front of the player.
+        if (Vector3.Dot(playerForward.normalized, dirToDog.normalized) < interactFaceThreshold)
+        {
+            return; // Player is not facing the dog! Ignore interaction.
+        }
+
+        // --- Interaction Logic ---
         if (dogCamera != null)
         {
             _isDogCamActive = !_isDogCamActive;
@@ -196,4 +195,4 @@ public class DogCompanion : MonoBehaviour, IInteractable
     {
         return transform;
     }
-}   
+}

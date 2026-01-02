@@ -170,6 +170,13 @@ public class InventoryManager : MonoBehaviour
         {
             Debug.LogWarning("InventoryManager: Lütfen Sağ ve Sol el transformlarını atayın!");
         }
+        else
+        {
+            // --- NEW CODE: Force Hands to be Active on Start ---
+            rightHandTransform.gameObject.SetActive(true);
+            leftHandTransform.gameObject.SetActive(true);
+            // ---------------------------------------------------
+        }
 
         if (gridContainer)
             gridContainer.TryGetComponent(out gridCanvasGroup);
@@ -705,5 +712,15 @@ public class InventoryManager : MonoBehaviour
         {
             slotImages[index].color = color;
         }
+    }
+
+    public ItemData GetCurrentEquippedItem()
+    {
+        // Check if a slot is actually selected and within bounds
+        if (currentEquippedSlot != -1 && currentEquippedSlot < inventorySlots.Count)
+        {
+            return inventorySlots[currentEquippedSlot].itemData;
+        }
+        return null;
     }
 }
