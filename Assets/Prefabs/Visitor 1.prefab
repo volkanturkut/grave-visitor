@@ -362,7 +362,6 @@ GameObject:
   - component: {fileID: 152439556009846162}
   - component: {fileID: 6260582320689616097}
   - component: {fileID: 3580150345124700055}
-  - component: {fileID: 9075139207774515397}
   - component: {fileID: 3893337431970435700}
   - component: {fileID: 5200025856830454447}
   m_Layer: 0
@@ -474,24 +473,6 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   m_characterRenderer: {fileID: 7396998303579673176}
   m_accessoriesToAttach: []
---- !u!114 &9075139207774515397
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 3395164369784548969}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: ba158ff05cf30224f94bfdddec8e7635, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  m_moveSpeed: 2
-  m_turnSpeed: 200
-  m_jumpForce: 4
-  m_animator: {fileID: 384010807905833070}
-  m_rigidBody: {fileID: 152439556009846162}
-  m_controlMode: 1
 --- !u!195 &3893337431970435700
 NavMeshAgent:
   m_ObjectHideFlags: 0
@@ -528,6 +509,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   minVisitDuration: 20
   maxVisitDuration: 60
+  wanderRadius: 10
+  wanderWaitTime: 5
 --- !u!1 &3803264108963870429
 GameObject:
   m_ObjectHideFlags: 0
