@@ -13,9 +13,9 @@ MonoBehaviour:
   m_Name: NormalDaySchedule
   m_EditorClassIdentifier: 
   events:
-  - description: 
+  - description: Midnight
+    hour: 0
+    eventToRaise: {fileID: 11400000, guid: 0aaef71a594fbee4493f90b1b5afcac4, type: 2}
+  - description: Morning
     hour: 6
-    eventToRaise: {fileID: 11400000, guid: a66a294615d1028418b7838e23e3e1c9, type: 2}
-  - description: 
-    hour: 18
-    eventToRaise: {fileID: 11400000, guid: d4f50ebb6d45fa047b5739cb7300b633, type: 2}
+    eventToRaise: {fileID: 11400000, guid: 18ef6a4b29025be49bedbadb8b66b4c3, type: 2}
