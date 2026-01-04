@@ -131,7 +131,7 @@ NavMeshAgent:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 4182012894789796420}
-  m_Enabled: 1
+  m_Enabled: 0
   m_AgentTypeID: 1479372276
   m_Radius: 0.5
   m_Speed: 3.5
@@ -158,7 +158,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: fb5ccbd9de0119a4d8914f4920ae39cc, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  flyingHeight: 0.5
+  flyingHeight: 0.8
   moveSpeed: 2
   minWaitTime: 2
   maxWaitTime: 5

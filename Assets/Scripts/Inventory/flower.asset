@@ -1,0 +1,29 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 6594be195ca64d846a6fa9dec3eeea05, type: 3}
+  m_Name: flower
+  m_EditorClassIdentifier: 
+  itemName: f
+  icon: {fileID: 0}
+  isStackable: 0
+  maxStack: 1
+  itemType: 1
+  prefab: {fileID: 3284526186983751252, guid: 1291ff752812e8141af01a5dfbb177ce, type: 3}
+  equippedPrefab: {fileID: 3284526186983751252, guid: 1291ff752812e8141af01a5dfbb177ce,
+    type: 3}
+  handType: 0
+  gripPosition: {x: 0, y: 0, z: 0}
+  gripRotation: {x: 0, y: 0, z: 0}
+  holdAnimBool: 
+  canUse: 1
+  canDrop: 1
+  canFavorite: 1

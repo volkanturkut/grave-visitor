@@ -13,7 +13,7 @@ MonoBehaviour:
   m_Name: Lantern
   m_EditorClassIdentifier: 
   itemName: Lantern
-  icon: {fileID: 21300000, guid: b65ce2ffce35aee48abe3141e4c7c9fb, type: 3}
+  icon: {fileID: 21300000, guid: af5b1593882b98748a4c7ef584a5f5cf, type: 3}
   isStackable: 0
   maxStack: 1
   itemType: 1

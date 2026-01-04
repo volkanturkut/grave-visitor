@@ -6,11 +6,17 @@ EditorBuildSettings:
   serializedVersion: 2
   m_Scenes:
   - enabled: 1
-    path: Assets/Scenes/Bend - Cylindrical Rolloff (Z).unity
+    path: Assets/Scenes/sahne.unity
     guid: f6b7e6372b050824c8bb84dd855f2f4d
   - enabled: 1
     path: Assets/Scenes/evic.unity
-    guid: 99c9720ab356a0642a771bea13969a05
+    guid: 79a659c276412374d87a4127e9c6d319
+  - enabled: 1
+    path: Assets/Scenes/knitting.unity
+    guid: 48a87c408cf85324c9db8ac2f9783c3b
+  - enabled: 1
+    path: Assets/Scenes/stonecarving.unity
+    guid: f5fba466cebaf42479b0d2f44c2669a0
   m_configObjects:
     com.unity.input.settings: {fileID: 11400000, guid: 9e7be553448fa2546aea5752021cbcf7,
       type: 2}

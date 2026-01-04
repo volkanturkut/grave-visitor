@@ -62,11 +62,11 @@ public class VisitorSpawner : MonoBehaviour
     {
         GameObject newVisitor = Instantiate(visitorPrefab, spawnPoint.position, spawnPoint.rotation);
 
-        // Initialize the AI
         VisitorAI ai = newVisitor.GetComponent<VisitorAI>();
         if (ai != null)
         {
-            ai.Initialize(dayNightController, despawnPoint.position);
+            // UPDATED: Now passing openHour and closeHour
+            ai.Initialize(dayNightController, despawnPoint.position, openHour, closeHour);
         }
     }
 

@@ -2,8 +2,9 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using TMPro;
-using UnityEngine.InputSystem; // For Gamepad button A
-using StarterAssets; // To access ThirdPersonController
+using UnityEngine.InputSystem;
+using StarterAssets;
+using System;
 
 public class DialogueManager : MonoBehaviour
 {
@@ -15,16 +16,18 @@ public class DialogueManager : MonoBehaviour
     public TextMeshProUGUI dialogueText;
 
     [Header("Player Reference")]
-    // Assign the Player object here to lock movement
     public ThirdPersonController playerController;
 
     private Queue<string> _sentences;
     private bool _isDialogueActive = false;
     private GhostNPC _currentInteractingGhost;
+    private Action _onDialogueComplete;
+
+    // FIX: Add a timer to prevent instant skipping
+    private float _inputCooldown = 0f;
 
     private void Awake()
     {
-        // Singleton pattern to access this from anywhere
         if (Instance == null) Instance = this;
         else Destroy(gameObject);
 
@@ -36,7 +39,14 @@ public class DialogueManager : MonoBehaviour
     {
         if (!_isDialogueActive) return;
 
-        // Check for Gamepad 'A' (Button South) OR Keyboard 'E' to Next/Close
+        // FIX: If cooldown is active, reduce it and ignore input
+        if (_inputCooldown > 0f)
+        {
+            _inputCooldown -= Time.deltaTime;
+            return;
+        }
+
+        // Check for Input
         if (WasSubmitPressed())
         {
             DisplayNextSentence();
@@ -45,27 +55,26 @@ public class DialogueManager : MonoBehaviour
 
     private bool WasSubmitPressed()
     {
-        // Check Gamepad South (A on Xbox, X on PS)
         if (Gamepad.current != null && Gamepad.current.buttonSouth.wasPressedThisFrame) return true;
-        // Check Keyboard E (or Enter)
         if (Keyboard.current != null && Keyboard.current.eKey.wasPressedThisFrame) return true;
-
         return false;
     }
 
-    public void StartDialogue(DialogueData data, GhostNPC ghost)
+    public void StartDialogue(DialogueData data, GhostNPC ghost, Action onComplete = null)
     {
         _isDialogueActive = true;
         _currentInteractingGhost = ghost;
+        _onDialogueComplete = onComplete;
 
-        // 1. Lock Player Movement using the method in ThirdPersonController.cs
+        // FIX: Set a small cooldown (e.g. 0.5 seconds) so the 'Interact' press doesn't skip text
+        _inputCooldown = 0.5f;
+
         if (playerController) playerController.LockInput(true);
 
-        // 2. Setup UI
         dialoguePanel.SetActive(true);
         nameText.text = data.speakerName;
-        _sentences.Clear();
 
+        _sentences.Clear();
         foreach (string sentence in data.sentences)
         {
             _sentences.Enqueue(sentence);
@@ -91,14 +100,17 @@ public class DialogueManager : MonoBehaviour
         _isDialogueActive = false;
         dialoguePanel.SetActive(false);
 
-        // 1. Unlock Player Movement
         if (playerController) playerController.LockInput(false);
 
-        // 2. Tell the ghost to resume wandering
-        if (_currentInteractingGhost != null)
+        if (_onDialogueComplete != null)
+        {
+            _onDialogueComplete.Invoke();
+            _onDialogueComplete = null;
+        }
+        else if (_currentInteractingGhost != null)
         {
             _currentInteractingGhost.ResumeWandering();
-            _currentInteractingGhost = null;
         }
+        _currentInteractingGhost = null;
     }
 }

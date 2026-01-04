@@ -13,12 +13,12 @@ MonoBehaviour:
   m_Name: Shovel
   m_EditorClassIdentifier: 
   itemName: Shovel
-  icon: {fileID: 21300000, guid: 3cad73c43a691d848b97685e118c033e, type: 3}
+  icon: {fileID: 21300000, guid: 062c67c7ad459544391c36e54b4f70d8, type: 3}
   isStackable: 0
   maxStack: 1
   itemType: 1
-  prefab: {fileID: 4380564117962812168, guid: 2f32d5371fc54ed4c80849928607f5fa, type: 3}
-  equippedPrefab: {fileID: 4105232990214050986, guid: 714278869a392344896bc0f40d20d58c,
+  prefab: {fileID: 7562578235230537023, guid: b503eb43aed78a34ea2efcfd522633d3, type: 3}
+  equippedPrefab: {fileID: 1947206666897346371, guid: f53f83cb077d5b54a904c1713269fc46,
     type: 3}
   handType: 0
   gripPosition: {x: 0, y: 0, z: 0}

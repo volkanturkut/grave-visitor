@@ -67,6 +67,7 @@ namespace StarterAssets
         private int _animIDFreeFall;
         private int _animIDMotionSpeed;
         private int _animIDIsZoomed; // NEW ID
+        private int _animIDWave;
 
         // Input Lock State
         private bool _inputLocked = false;
@@ -140,6 +141,7 @@ namespace StarterAssets
             _animIDFreeFall = Animator.StringToHash("FreeFall");
             _animIDMotionSpeed = Animator.StringToHash("MotionSpeed");
             _animIDIsZoomed = Animator.StringToHash("IsZoomed");
+            _animIDWave = Animator.StringToHash("Wave"); // <--- ADD THIS
         }
 
         // --- NEW HELPER METHODS ---
@@ -164,6 +166,14 @@ namespace StarterAssets
         public void SetZoomAnimation(bool isZoomed)
         {
             if (_hasAnimator) _animator.SetBool(_animIDIsZoomed, isZoomed);
+        }
+
+        public void SetWaveAnimation(bool isWaving)
+        {
+            if (_hasAnimator)
+            {
+                _animator.SetBool(_animIDWave, isWaving);
+            }
         }
 
         public void TriggerActionAnimation(string triggerName)
