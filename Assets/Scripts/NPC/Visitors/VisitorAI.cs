@@ -37,6 +37,7 @@ public class VisitorAI : MonoBehaviour, IPoolable
     // Animation IDs
     private int _animIDSpeed;
     private int _animIDVisiting;
+    private int _animIDMotionSpeed;
 
     /// <summary>
     /// Initializes the visitor with time controller and spawn/despawn settings
@@ -61,6 +62,7 @@ public class VisitorAI : MonoBehaviour, IPoolable
 
         _animIDSpeed = Animator.StringToHash("Speed");
         _animIDVisiting = Animator.StringToHash("IsVisiting");
+        _animIDMotionSpeed = Animator.StringToHash("MotionSpeed");
 
         StartCoroutine(VisitorLoopRoutine());
     }
@@ -69,7 +71,7 @@ public class VisitorAI : MonoBehaviour, IPoolable
     {
         // 1. Sync Animation
         _animator.SetFloat(_animIDSpeed, _agent.velocity.magnitude);
-        _animator.SetFloat("MotionSpeed", MOTION_SPEED);
+        _animator.SetFloat(_animIDMotionSpeed, MOTION_SPEED);
 
         // 2. UPDATED: Dynamic Leave Check
         // If we are NOT leaving yet, check if visiting hours are over
