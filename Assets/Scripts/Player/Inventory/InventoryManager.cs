@@ -438,24 +438,15 @@ public class InventoryManager : MonoBehaviour
     public void OnFavoriteItem(int invIndex)
     {
         if (invIndex < 0 || invIndex >= inventorySlots.Count) return;
-        if (inventorySlots[invIndex].itemData.itemType != ItemData.ItemType.Tool)
-        {
-            DebugLogger.Log("Only Tools can be favorited!");
-            return;
-        }
+        if (inventorySlots[invIndex].itemData.itemType != ItemData.ItemType.Tool) return;
 
         int currentFav = GetFavoriteIndex(invIndex);
         if (currentFav != -1) favoriteSlots[currentFav] = -1;
 
         int nextFav = currentFav + 1;
-        if (nextFav > 3)
-        {
-            DebugLogger.Log("Removed from Favorites");
-        }
-        else
+        if (nextFav <= 3)
         {
             favoriteSlots[nextFav] = invIndex;
-            DebugLogger.Log($"Assigned to Favorite Slot {nextFav + 1}");
         }
     }
 
