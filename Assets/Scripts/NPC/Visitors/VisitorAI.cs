@@ -248,17 +248,20 @@ public class VisitorAI : MonoBehaviour, IPoolable
         return navHit.position;
     }
 
+    // Shared buffer to avoid allocations per call
+    private static List<GravePoint> _searchBuffer = new List<GravePoint>();
+
     private GravePoint GetRandomEmptyGrave()
     {
-        var emptyGraves = new List<GravePoint>();
+        _searchBuffer.Clear();
         foreach (var grave in GravePoint.AllGraves)
         {
-            if (!grave.IsOccupied) emptyGraves.Add(grave);
+            if (!grave.IsOccupied) _searchBuffer.Add(grave);
         }
 
-        if (emptyGraves.Count == 0) return null;
+        if (_searchBuffer.Count == 0) return null;
 
-        GravePoint selected = emptyGraves[Random.Range(0, emptyGraves.Count)];
+        GravePoint selected = _searchBuffer[Random.Range(0, _searchBuffer.Count)];
         selected.SetOccupied(true);
         return selected;
     }
