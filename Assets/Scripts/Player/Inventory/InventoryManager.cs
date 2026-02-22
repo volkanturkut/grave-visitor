@@ -477,6 +477,8 @@ public class InventoryManager : MonoBehaviour
             return;
         }
 
+        if (index < 0 || index >= inventorySlots.Count) return;
+
         InventorySlotData slot = inventorySlots[index];
         if (slot.IsEmpty) return;
 
@@ -572,6 +574,8 @@ public class InventoryManager : MonoBehaviour
     /// <param name="index">Index of the item to use.</param>
     public void OnUseItem(int index)
     {
+        if (index < 0 || index >= inventorySlots.Count) return;
+
         if (inventorySlots[index].itemData.itemType == ItemData.ItemType.Tool)
         {
             EquipItem(index);
