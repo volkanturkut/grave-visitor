@@ -385,9 +385,22 @@ public class InventoryManager : MonoBehaviour
             if (dpad.sqrMagnitude < 0.1f) dpadPressed = false;
             else if (!dpadPressed)
             {
-                if (dpad.x > 0.5f) { CycleFavorite(1); dpadPressed = true; }
-                else if (dpad.x < -0.5f) { CycleFavorite(-1); dpadPressed = true; }
-                else if (dpad.y < -0.5f) { UnequipItem(); currentEquippedFavIndex = -1; dpadPressed = true; }
+                if (dpad.x > 0.5f)
+                {
+                    CycleFavorite(1);
+                    dpadPressed = true;
+                }
+                else if (dpad.x < -0.5f)
+                {
+                    CycleFavorite(-1);
+                    dpadPressed = true;
+                }
+                else if (dpad.y < -0.5f)
+                {
+                    UnequipItem();
+                    currentEquippedFavIndex = -1;
+                    dpadPressed = true;
+                }
             }
         }
         if (Keyboard.current != null)
@@ -461,7 +474,10 @@ public class InventoryManager : MonoBehaviour
 
     public int GetFavoriteIndex(int invIndex)
     {
-        for (int i = 0; i < favoriteSlots.Length; i++) { if (favoriteSlots[i] == invIndex) return i; }
+        for (int i = 0; i < favoriteSlots.Length; i++)
+        {
+            if (favoriteSlots[i] == invIndex) return i;
+        }
         return -1;
     }
 
@@ -593,8 +609,21 @@ public class InventoryManager : MonoBehaviour
         InventorySlotData slot = inventorySlots[index];
         if (slot.IsEmpty || slot.quantity < 2) return;
         int emptyIndex = -1;
-        for (int i = 0; i < inventorySlots.Count; i++) { if (inventorySlots[i].IsEmpty) { emptyIndex = i; break; } }
-        if (emptyIndex != -1) { slot.quantity--; inventorySlots[emptyIndex].itemData = slot.itemData; inventorySlots[emptyIndex].quantity = 1; RefreshUI(); }
+        for (int i = 0; i < inventorySlots.Count; i++)
+        {
+            if (inventorySlots[i].IsEmpty)
+            {
+                emptyIndex = i;
+                break;
+            }
+        }
+        if (emptyIndex != -1)
+        {
+            slot.quantity--;
+            inventorySlots[emptyIndex].itemData = slot.itemData;
+            inventorySlots[emptyIndex].quantity = 1;
+            RefreshUI();
+        }
     }
 
     /// <summary>
@@ -639,7 +668,8 @@ public class InventoryManager : MonoBehaviour
                 worldItem.quantity = slot.quantity;
             }
         }
-        inventorySlots[index] = new InventorySlotData(); RefreshUI();
+        inventorySlots[index] = new InventorySlotData();
+        RefreshUI();
     }
 
     /// <summary>
@@ -681,7 +711,12 @@ public class InventoryManager : MonoBehaviour
     private void HandleInputLogic()
     {
         if (_contextAction == null) return;
-        if (_contextAction.WasPressedThisFrame()) { isHoldingButton = true; holdTimer = 0f; isDragging = false; }
+        if (_contextAction.WasPressedThisFrame())
+        {
+            isHoldingButton = true;
+            holdTimer = 0f;
+            isDragging = false;
+        }
         if (isHoldingButton)
         {
             holdTimer += Time.deltaTime;
@@ -712,9 +747,14 @@ public class InventoryManager : MonoBehaviour
             else
             {
                 int index = GetSelectedSlotIndex();
-                if (index != -1 && !inventorySlots[index].IsEmpty) { Vector2 menuPos = (Vector2)uiSlotObjects[index].transform.position + contextMenuOffset; OpenContextMenu(index, menuPos); }
+                if (index != -1 && !inventorySlots[index].IsEmpty)
+                {
+                    Vector2 menuPos = (Vector2)uiSlotObjects[index].transform.position + contextMenuOffset;
+                    OpenContextMenu(index, menuPos);
+                }
             }
-            isDragging = false; holdTimer = 0f;
+            isDragging = false;
+            holdTimer = 0f;
         }
     }
 
@@ -724,7 +764,11 @@ public class InventoryManager : MonoBehaviour
     /// <param name="context">Input context.</param>
     private void OnCloseInput(InputAction.CallbackContext context)
     {
-        if (contextMenuScript != null && contextMenuScript.gameObject.activeSelf) { CloseContextMenu(true); return; }
+        if (contextMenuScript != null && contextMenuScript.gameObject.activeSelf)
+        {
+            CloseContextMenu(true);
+            return;
+        }
         if (!isTransitioning && isInventoryOpen) StartCoroutine(ToggleRoutine(false));
     }
 
@@ -739,7 +783,11 @@ public class InventoryManager : MonoBehaviour
         if (!inventorySlots[index].IsEmpty)
         {
             lastSelectedSlot = index;
-            if (gridCanvasGroup) { gridCanvasGroup.interactable = false; gridCanvasGroup.blocksRaycasts = false; }
+            if (gridCanvasGroup)
+            {
+                gridCanvasGroup.interactable = false;
+                gridCanvasGroup.blocksRaycasts = false;
+            }
             contextMenuScript.OpenMenu(inventorySlots[index].itemData, index, pos, inventorySlots[index].quantity);
             ShowTooltip(inventorySlots[index].itemData.itemName, uiSlotObjects[index].transform.position);
         }
@@ -755,15 +803,26 @@ public class InventoryManager : MonoBehaviour
 
         contextMenuScript.Close();
         tooltipPanel.SetActive(false);
-        if (gridCanvasGroup) { gridCanvasGroup.interactable = true; gridCanvasGroup.blocksRaycasts = true; }
-        if (restoreSelection && lastSelectedSlot != -1 && lastSelectedSlot < uiSlotObjects.Count) StartCoroutine(RestoreSelectionRoutine(uiSlotObjects[lastSelectedSlot]));
-        else lastSelectedSlot = -1;
+        if (gridCanvasGroup)
+        {
+            gridCanvasGroup.interactable = true;
+            gridCanvasGroup.blocksRaycasts = true;
+        }
+        if (restoreSelection && lastSelectedSlot != -1 && lastSelectedSlot < uiSlotObjects.Count)
+            StartCoroutine(RestoreSelectionRoutine(uiSlotObjects[lastSelectedSlot]));
+        else
+            lastSelectedSlot = -1;
     }
 
     /// <summary>
     /// Coroutine to safe-guard selection restoration, waiting one frame.
     /// </summary>
-    private IEnumerator RestoreSelectionRoutine(GameObject objToSelect) { yield return null; EventSystem.current.SetSelectedGameObject(objToSelect); lastSelectedSlot = -1; }
+    private IEnumerator RestoreSelectionRoutine(GameObject objToSelect)
+    {
+        yield return null;
+        EventSystem.current.SetSelectedGameObject(objToSelect);
+        lastSelectedSlot = -1;
+    }
 
     /// <summary>
     /// Initiates a drag operation when using gamepad inputs.
@@ -773,14 +832,21 @@ public class InventoryManager : MonoBehaviour
         int currentIndex = GetSelectedSlotIndex();
         if (currentIndex != -1 && !inventorySlots[currentIndex].IsEmpty)
         {
-            CloseContextMenu(false); isDragging = true; gamepadSourceIndex = currentIndex;
+            CloseContextMenu(false);
+            isDragging = true;
+            gamepadSourceIndex = currentIndex;
             if (uiSlotObjects[currentIndex].TryGetComponent(out InventorySlotUI slotUI))
             {
                 if (slotUI.iconImage)
                 {
                     gamepadMovingIcon = slotUI.iconImage;
                     gamepadOriginalParent = gamepadMovingIcon.transform.parent;
-                    if (slotUI.qtyText) { gamepadMovingText = slotUI.qtyText; gamepadOriginalTextParent = gamepadMovingText.transform.parent; gamepadMovingText.transform.SetParent(gamepadMovingIcon.transform); }
+                    if (slotUI.qtyText)
+                    {
+                        gamepadMovingText = slotUI.qtyText;
+                        gamepadOriginalTextParent = gamepadMovingText.transform.parent;
+                        gamepadMovingText.transform.SetParent(gamepadMovingIcon.transform);
+                    }
                     gamepadMovingIcon.transform.SetParent(inventoryPanel.transform);
                 }
             }
@@ -797,8 +863,14 @@ public class InventoryManager : MonoBehaviour
             int targetIndex = GetSelectedSlotIndex();
             if (gamepadMovingIcon && gamepadOriginalParent)
             {
-                if (gamepadMovingText && gamepadOriginalTextParent) { gamepadMovingText.transform.SetParent(gamepadOriginalTextParent); gamepadMovingText = null; }
-                gamepadMovingIcon.transform.SetParent(gamepadOriginalParent); gamepadMovingIcon.rectTransform.anchoredPosition = Vector2.zero; gamepadMovingIcon = null;
+                if (gamepadMovingText && gamepadOriginalTextParent)
+                {
+                    gamepadMovingText.transform.SetParent(gamepadOriginalTextParent);
+                    gamepadMovingText = null;
+                }
+                gamepadMovingIcon.transform.SetParent(gamepadOriginalParent);
+                gamepadMovingIcon.rectTransform.anchoredPosition = Vector2.zero;
+                gamepadMovingIcon = null;
             }
             if (targetIndex != -1 && targetIndex != gamepadSourceIndex)
             {
@@ -817,11 +889,20 @@ public class InventoryManager : MonoBehaviour
                     else SwapItems(gamepadSourceIndex, targetIndex);
                 }
                 else SwapItems(gamepadSourceIndex, targetIndex);
-                if (!inventorySlots[targetIndex].IsEmpty) ShowTooltip(inventorySlots[targetIndex].itemData.itemName, uiSlotObjects[targetIndex].transform.position);
-                else HideTooltip();
+                if (!inventorySlots[targetIndex].IsEmpty)
+                {
+                    ShowTooltip(inventorySlots[targetIndex].itemData.itemName, uiSlotObjects[targetIndex].transform.position);
+                }
+                else
+                {
+                    HideTooltip();
+                }
                 RefreshUI();
             }
-            else RefreshUI();
+            else
+            {
+                RefreshUI();
+            }
             gamepadSourceIndex = -1;
         }
     }
@@ -833,7 +914,17 @@ public class InventoryManager : MonoBehaviour
     /// <param name="indexB">Second slot index.</param>
     private void UpdateFavoritesOnSwap(int indexA, int indexB)
     {
-        for (int i = 0; i < 4; i++) { if (favoriteSlots[i] == indexA) favoriteSlots[i] = indexB; else if (favoriteSlots[i] == indexB) favoriteSlots[i] = indexA; }
+        for (int i = 0; i < 4; i++)
+        {
+            if (favoriteSlots[i] == indexA)
+            {
+                favoriteSlots[i] = indexB;
+            }
+            else if (favoriteSlots[i] == indexB)
+            {
+                favoriteSlots[i] = indexA;
+            }
+        }
     }
 
     /// <summary>
@@ -843,7 +934,11 @@ public class InventoryManager : MonoBehaviour
     /// <param name="position">Screen position for the tooltip.</param>
     public void ShowTooltip(string name, Vector2 position)
     {
-        if (string.IsNullOrEmpty(name)) { HideTooltip(); return; }
+        if (string.IsNullOrEmpty(name))
+        {
+            HideTooltip();
+            return;
+        }
         tooltipPanel.SetActive(true);
         tooltipText.text = name;
         tooltipPanel.transform.rotation = Quaternion.Euler(-180, 0, 0);
@@ -855,7 +950,11 @@ public class InventoryManager : MonoBehaviour
     /// <summary>
     /// Hides the currently active tooltip.
     /// </summary>
-    public void HideTooltip() { if (contextMenuPanel.activeSelf) return; tooltipPanel.SetActive(false); }
+    public void HideTooltip()
+    {
+        if (contextMenuPanel.activeSelf) return;
+        tooltipPanel.SetActive(false);
+    }
 
     /// <summary>
     /// Sets the color of a specific inventory slot icon.
