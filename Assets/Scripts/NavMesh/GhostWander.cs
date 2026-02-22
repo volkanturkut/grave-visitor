@@ -1,6 +1,5 @@
 using UnityEngine;
 using UnityEngine.AI;
-using System.Collections;
 
 [RequireComponent(typeof(NavMeshAgent))]
 public class GhostWander : MonoBehaviour
@@ -19,6 +18,7 @@ public class GhostWander : MonoBehaviour
     private Vector3 _wanderCenter;
     private float _wanderRadius;
     private bool _isWaiting;
+    private float _waitTimer;
     private bool _isInitialized = false;
 
     private void Awake()
@@ -44,12 +44,19 @@ public class GhostWander : MonoBehaviour
         // Wait until Initialize is called
         if (!_isInitialized) return;
 
-        if (!_agent.pathPending && _agent.remainingDistance <= _agent.stoppingDistance)
+        if (_isWaiting)
         {
-            if (!_isWaiting)
+            _waitTimer -= Time.deltaTime;
+            if (_waitTimer <= 0f)
             {
-                StartCoroutine(WaitAndPickNewSpot());
+                _isWaiting = false;
+                MoveToRandomPoint();
             }
+        }
+        else if (!_agent.pathPending && _agent.remainingDistance <= _agent.stoppingDistance)
+        {
+            _isWaiting = true;
+            _waitTimer = Random.Range(minWaitTime, maxWaitTime);
         }
     }
 
@@ -64,19 +71,6 @@ public class GhostWander : MonoBehaviour
         {
             MoveToRandomPoint();
         }
-    }
-
-    private IEnumerator WaitAndPickNewSpot()
-    {
-        _isWaiting = true;
-        yield return new WaitForSeconds(Random.Range(minWaitTime, maxWaitTime));
-
-        // Check again before moving (ghost might have been disabled/destroyed during wait)
-        if (this != null && _agent != null && _agent.isOnNavMesh && _agent.isActiveAndEnabled)
-        {
-            MoveToRandomPoint();
-        }
-        _isWaiting = false;
     }
 
     private void MoveToRandomPoint()
