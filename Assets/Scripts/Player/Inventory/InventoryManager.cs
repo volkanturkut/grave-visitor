@@ -64,7 +64,6 @@ public class InventoryManager : MonoBehaviour
     private int currentEquippedFavIndex = -1;
     private int currentEquippedSlot = -1;
     private GameObject currentEquippedObject;
-    private RectTransform tooltipRect;
 
     // Animation tracking
     private string currentActiveAnimParam = "";
@@ -129,13 +128,10 @@ public class InventoryManager : MonoBehaviour
         _view.tooltipPanel = tooltipPanel;
         _view.tooltipText = tooltipText;
         _view.contextMenuPanel = contextMenuPanel;
-        // _view.tooltipOffset is public and we can sync it or leave properly set on View if inspected
+        if (_view) _view.tooltipOffset = tooltipOffset;
 
         InitializeSystem();
         InitializeSlots();
-
-        if (tooltipPanel)
-            tooltipPanel.TryGetComponent(out tooltipRect);
 
         if (contextMenuScript)
         {
@@ -837,22 +833,20 @@ public class InventoryManager : MonoBehaviour
     {
         if (string.IsNullOrEmpty(name)) { HideTooltip(); return; }
 
-        if (tooltipText.text != name || !tooltipPanel.activeSelf)
+        if (_view)
         {
-            tooltipPanel.SetActive(true);
-            tooltipText.text = name;
-            if (tooltipRect) UnityEngine.UI.LayoutRebuilder.ForceRebuildLayoutImmediate(tooltipRect);
+            _view.ShowTooltip(name, position);
         }
-
-        tooltipPanel.transform.rotation = Quaternion.Euler(-180, 0, 0);
-        tooltipPanel.transform.position = position;
-        tooltipPanel.transform.Translate(tooltipOffset.x, tooltipOffset.y, 0, Space.Self);
     }
 
     /// <summary>
     /// Hides the currently active tooltip.
     /// </summary>
-    public void HideTooltip() { if (contextMenuPanel.activeSelf) return; tooltipPanel.SetActive(false); }
+    public void HideTooltip()
+    {
+        if (contextMenuPanel.activeSelf) return;
+        if (_view) _view.HideTooltip();
+    }
 
     /// <summary>
     /// Sets the color of a specific inventory slot icon.
