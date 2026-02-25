@@ -85,17 +85,24 @@ namespace GraveVisitor.Inventory
             }
         }
 
+        private RectTransform _tooltipRect;
+
         public void ShowTooltip(string text, Vector2 position)
         {
             if (tooltipPanel && tooltipText)
             {
+                if (_tooltipRect == null) tooltipPanel.TryGetComponent(out _tooltipRect);
+
                 if (tooltipText.text != text || !tooltipPanel.activeSelf)
                 {
                     tooltipPanel.SetActive(true);
                     tooltipText.text = text;
-                    LayoutRebuilder.ForceRebuildLayoutImmediate(tooltipPanel.GetComponent<RectTransform>());
+                    if (_tooltipRect) LayoutRebuilder.ForceRebuildLayoutImmediate(_tooltipRect);
                 }
-                tooltipPanel.transform.position = position + tooltipOffset;
+
+                tooltipPanel.transform.rotation = Quaternion.Euler(-180, 0, 0);
+                tooltipPanel.transform.position = position;
+                tooltipPanel.transform.Translate(tooltipOffset.x, tooltipOffset.y, 0, Space.Self);
             }
         }
 
