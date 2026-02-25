@@ -844,10 +844,15 @@ public class InventoryManager : MonoBehaviour
     public void ShowTooltip(string name, Vector2 position)
     {
         if (string.IsNullOrEmpty(name)) { HideTooltip(); return; }
-        tooltipPanel.SetActive(true);
-        tooltipText.text = name;
+
+        if (tooltipText.text != name || !tooltipPanel.activeSelf)
+        {
+            tooltipPanel.SetActive(true);
+            tooltipText.text = name;
+            if (tooltipRect) UnityEngine.UI.LayoutRebuilder.ForceRebuildLayoutImmediate(tooltipRect);
+        }
+
         tooltipPanel.transform.rotation = Quaternion.Euler(-180, 0, 0);
-        if (tooltipRect) UnityEngine.UI.LayoutRebuilder.ForceRebuildLayoutImmediate(tooltipRect);
         tooltipPanel.transform.position = position;
         tooltipPanel.transform.Translate(tooltipOffset.x, tooltipOffset.y, 0, Space.Self);
     }

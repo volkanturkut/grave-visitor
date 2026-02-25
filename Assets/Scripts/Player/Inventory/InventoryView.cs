@@ -89,11 +89,13 @@ namespace GraveVisitor.Inventory
         {
             if (tooltipPanel && tooltipText)
             {
-                tooltipPanel.SetActive(true);
-                tooltipText.text = text;
+                if (tooltipText.text != text || !tooltipPanel.activeSelf)
+                {
+                    tooltipPanel.SetActive(true);
+                    tooltipText.text = text;
+                    LayoutRebuilder.ForceRebuildLayoutImmediate(tooltipPanel.GetComponent<RectTransform>());
+                }
                 tooltipPanel.transform.position = position + tooltipOffset;
-                // Force layout update if needed
-                LayoutRebuilder.ForceRebuildLayoutImmediate(tooltipPanel.GetComponent<RectTransform>());
             }
         }
 
