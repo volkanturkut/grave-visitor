@@ -118,17 +118,6 @@ public class InventoryManager : MonoBehaviour
             return;
         }
 
-        InitializeSystem();
-        InitializeSlots();
-
-        if (tooltipPanel)
-            tooltipPanel.TryGetComponent(out tooltipRect);
-
-        if (contextMenuScript)
-        {
-            contextMenuScript.Setup(this);
-        }
-
         // Initialize MVC View
         _view = GetComponent<InventoryView>();
         if (_view == null) _view = gameObject.AddComponent<InventoryView>();
@@ -147,6 +136,11 @@ public class InventoryManager : MonoBehaviour
 
         if (tooltipPanel)
             tooltipPanel.TryGetComponent(out tooltipRect);
+
+        if (contextMenuScript)
+        {
+            contextMenuScript.Setup(this);
+        }
 
         inventoryPanel.SetActive(false);
         if (contextMenuPanel) contextMenuPanel.SetActive(false);
