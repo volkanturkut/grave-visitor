@@ -206,10 +206,8 @@ public class InventoryManager : MonoBehaviour
         }
         else
         {
-            // --- NEW CODE: Force Hands to be Active on Start ---
             rightHandTransform.gameObject.SetActive(true);
             leftHandTransform.gameObject.SetActive(true);
-            // ---------------------------------------------------
         }
 
         if (gridContainer)

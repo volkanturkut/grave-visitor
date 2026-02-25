@@ -66,7 +66,7 @@ namespace StarterAssets
         private int _animIDJump;
         private int _animIDFreeFall;
         private int _animIDMotionSpeed;
-        private int _animIDIsZoomed; // NEW ID
+        private int _animIDIsZoomed;
         private int _animIDWave;
 
         // Input Lock State
@@ -141,10 +141,8 @@ namespace StarterAssets
             _animIDFreeFall = Animator.StringToHash("FreeFall");
             _animIDMotionSpeed = Animator.StringToHash("MotionSpeed");
             _animIDIsZoomed = Animator.StringToHash("IsZoomed");
-            _animIDWave = Animator.StringToHash("Wave"); // <--- ADD THIS
+            _animIDWave = Animator.StringToHash("Wave");
         }
-
-        // --- NEW HELPER METHODS ---
 
         public void LockInput(bool lockInput)
         {
@@ -183,8 +181,6 @@ namespace StarterAssets
 
         public Animator GetAnimator() { return _animator; }
 
-        // --------------------------
-
         private void GroundedCheck()
         {
             Vector3 spherePosition = new(transform.position.x, transform.position.y - GroundedOffset, transform.position.z);
@@ -215,7 +211,7 @@ namespace StarterAssets
 
         private void Move()
         {
-            // NEW: If input is locked (playing animation), stop moving
+            // If input is locked (playing animation), stop moving
             if (_inputLocked)
             {
                 _input.move = Vector2.zero;
@@ -261,7 +257,6 @@ namespace StarterAssets
                 _animator.SetFloat(_animIDSpeed, _animationBlend);
                 _animator.SetFloat(_animIDMotionSpeed, inputMagnitude);
 
-                // --- FIX: FORCE SHY MODE OFF IF MOVING ---
                 // If we are moving faster than 0.1, force the IsZoomed parameter to false
                 // This ensures we exit the Shy animation instantly when walking
                 if (_animationBlend > 0.1f)

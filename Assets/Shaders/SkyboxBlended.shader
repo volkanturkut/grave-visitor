@@ -6,7 +6,7 @@ Shader "Skybox/Blended" {
         _Blend ("Blend (0=A, 1=B)", Range(0.0, 1.0)) = 0
         _Exposure ("Exposure", Range(0, 8)) = 1.0
         _Rotation ("Rotation (Spin)", Range(0, 360)) = 0
-        _Tilt ("Tilt (Bring Clouds Down)", Range(-90, 90)) = 0  // <--- NEW
+        _Tilt ("Tilt (Bring Clouds Down)", Range(-90, 90)) = 0
     }
     SubShader {
         Tags { "Queue"="Background" "RenderType"="Background" "PreviewType"="Skybox" }
