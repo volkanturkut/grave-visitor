@@ -81,6 +81,7 @@ namespace StarterAssets
         private GameObject _mainCamera;
 
         private const float _threshold = 0.01f;
+        private const float _zoomDisableThreshold = 0.1f;
         private bool _hasAnimator;
 
         private bool IsCurrentDeviceMouse
@@ -252,14 +253,17 @@ namespace StarterAssets
 
             _controller.Move(targetDirection.normalized * (_speed * Time.deltaTime) + new Vector3(0.0f, _verticalVelocity, 0.0f) * Time.deltaTime);
 
+            UpdateAnimatorParams(inputMagnitude);
+        }
+
+        private void UpdateAnimatorParams(float inputMagnitude)
+        {
             if (_hasAnimator)
             {
                 _animator.SetFloat(_animIDSpeed, _animationBlend);
                 _animator.SetFloat(_animIDMotionSpeed, inputMagnitude);
 
-                // If we are moving faster than 0.1, force the IsZoomed parameter to false
-                // This ensures we exit the Shy animation instantly when walking
-                if (_animationBlend > 0.1f)
+                if (_animationBlend > _zoomDisableThreshold)
                 {
                     _animator.SetBool(_animIDIsZoomed, false);
                 }
