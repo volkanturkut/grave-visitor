@@ -39,6 +39,7 @@ public class DogCompanion : MonoBehaviour, IInteractable
     private Animator _animator;
     private AudioSource _audioSource;
     private PlayerInputs _playerInputs;
+    private CharacterController _playerCharacterController;
 
     private float _sitTimer;
     private bool _isSitting;
@@ -67,6 +68,7 @@ public class DogCompanion : MonoBehaviour, IInteractable
         {
             playerController = playerTransform.GetComponent<ThirdPersonController>();
             _playerInputs = playerTransform.GetComponent<PlayerInputs>();
+            _playerCharacterController = playerTransform.GetComponent<CharacterController>();
         }
 
         _animIDSpeed = Animator.StringToHash("Speed");
@@ -152,7 +154,7 @@ public class DogCompanion : MonoBehaviour, IInteractable
             return;
         }
 
-        float playerSpeed = playerController.GetComponent<CharacterController>().velocity.magnitude;
+        float playerSpeed = _playerCharacterController != null ? _playerCharacterController.velocity.magnitude : 0f;
         if (playerSpeed < MOVEMENT_THRESHOLD)
         {
             _sitTimer += Time.deltaTime;
