@@ -13,6 +13,11 @@ public class PlayerInteract : MonoBehaviour
     private PlayerInputs _input;
     private readonly Collider[] _colliderResults = new Collider[10];
 
+    // Throttling for performance optimization
+    private float _nextCheckTime;
+    private float _checkInterval = 0.1f;
+    private IInteractable _cachedInteractable;
+
     private void Start()
     {
         _input = GetComponent<PlayerInputs>();
@@ -20,7 +25,7 @@ public class PlayerInteract : MonoBehaviour
 
     private void Update()
     {
-        // 1. Constantly find the closest grave
+        // 1. Constantly find the closest grave (now throttled)
         IInteractable target = GetInteractableObject();
 
         // 2. VISUAL DEBUGGING (Draw lines in Scene View)
@@ -49,6 +54,15 @@ public class PlayerInteract : MonoBehaviour
 
     public IInteractable GetInteractableObject()
     {
+        // Performance Optimization: Return cached result if interval hasn't passed
+        if (Time.time < _nextCheckTime)
+        {
+            return _cachedInteractable;
+        }
+
+        // Update the next check time
+        _nextCheckTime = Time.time + _checkInterval;
+
         // Find everything inside the sphere
         int numFound = Physics.OverlapSphereNonAlloc(transform.position, interactRange, _colliderResults, interactLayer);
 
@@ -70,6 +84,9 @@ public class PlayerInteract : MonoBehaviour
                 }
             }
         }
+
+        // Cache the result
+        _cachedInteractable = closestInteractable;
         return closestInteractable;
     }
 
