@@ -174,5 +174,100 @@ namespace GraveVisitor.Inventory.Tests
             // Assert
             Assert.IsTrue(eventInvoked, "OnInventoryUpdated should be invoked after swap.");
         }
+
+        [Test]
+        public void AddItem_NonStackable_AddsToEmptySlot()
+        {
+            // Arrange
+            ItemData item = ScriptableObject.CreateInstance<ItemData>();
+            item.itemName = "NonStackable Item";
+            item.isStackable = false;
+            item.maxStack = 1;
+
+            // Act
+            bool result = _inventoryModel.AddItem(item, 1);
+
+            // Assert
+            Assert.IsTrue(result, "AddItem should return true for successful addition.");
+            Assert.IsFalse(_inventoryModel.GetSlot(0).IsEmpty, "Slot 0 should not be empty.");
+            Assert.AreEqual(item, _inventoryModel.GetSlot(0).itemData, "Slot 0 should contain the added item.");
+            Assert.AreEqual(1, _inventoryModel.GetSlot(0).quantity, "Slot 0 should have quantity 1.");
+        }
+
+        [Test]
+        public void AddItem_Stackable_StacksExistingSlot()
+        {
+            // Arrange
+            ItemData item = ScriptableObject.CreateInstance<ItemData>();
+            item.itemName = "Stackable Item";
+            item.isStackable = true;
+            item.maxStack = 10;
+
+            _inventoryModel.AddItem(item, 5);
+
+            // Act
+            bool result = _inventoryModel.AddItem(item, 3);
+
+            // Assert
+            Assert.IsTrue(result, "AddItem should return true.");
+            Assert.AreEqual(8, _inventoryModel.GetSlot(0).quantity, "Quantity should be 5 + 3 = 8.");
+        }
+
+        [Test]
+        public void AddItem_Stackable_OverflowsToNewSlot()
+        {
+            // Arrange
+            ItemData item = ScriptableObject.CreateInstance<ItemData>();
+            item.itemName = "Stackable Item";
+            item.isStackable = true;
+            item.maxStack = 5;
+
+            // Act
+            bool result = _inventoryModel.AddItem(item, 7);
+
+            // Assert
+            Assert.IsTrue(result, "AddItem should return true.");
+            Assert.AreEqual(5, _inventoryModel.GetSlot(0).quantity, "First slot should be full (maxStack).");
+            Assert.AreEqual(2, _inventoryModel.GetSlot(1).quantity, "Second slot should have remaining items.");
+            Assert.AreEqual(item, _inventoryModel.GetSlot(1).itemData, "Second slot should contain the same item.");
+        }
+
+        [Test]
+        public void AddItem_FullInventory_ReturnsFalse()
+        {
+            // Arrange
+            ItemData item = ScriptableObject.CreateInstance<ItemData>();
+            item.itemName = "Filler Item";
+            item.isStackable = false;
+            item.maxStack = 1;
+
+            // Fill all slots
+            for (int i = 0; i < MaxSlots; i++)
+            {
+                _inventoryModel.AddItem(item, 1);
+            }
+
+            // Act
+            bool result = _inventoryModel.AddItem(item, 1);
+
+            // Assert
+            Assert.IsFalse(result, "AddItem should return false when inventory is full.");
+        }
+
+        [Test]
+        public void AddItem_InvokesUpdateEvent()
+        {
+            // Arrange
+            bool eventInvoked = false;
+            _inventoryModel.OnInventoryUpdated.AddListener(() => eventInvoked = true);
+            ItemData item = ScriptableObject.CreateInstance<ItemData>();
+            item.itemName = "Test Item";
+
+            // Act
+            _inventoryModel.AddItem(item, 1);
+
+            // Assert
+            Assert.IsTrue(eventInvoked, "OnInventoryUpdated should be invoked when item is added.");
+        }
     }
 }
