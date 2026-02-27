@@ -112,7 +112,7 @@ public class VisitorSpawner : MonoBehaviour
         ai.transform.rotation = spawnPoint.rotation;
 
         // Initialize visitor
-        ai.Initialize(dayNightController, despawnPoint.position, openHour, closeHour);
+        ai.Initialize(this, dayNightController, despawnPoint.position, openHour, closeHour);
         _activeVisitors.Add(ai);
 
         DebugLogger.Log($"[VisitorSpawner] Spawned visitor (Active: {_activeVisitors.Count}, Pool: {_visitorPool.ActiveCount}/{_visitorPool.TotalCount})");

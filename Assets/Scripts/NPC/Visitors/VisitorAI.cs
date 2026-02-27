@@ -30,6 +30,7 @@ public class VisitorAI : MonoBehaviour, IPoolable
     private float _openHour;
     private float _closeHour;
 
+    private VisitorSpawner _spawner;
     private GravePoint _targetGrave;
     private Vector3 _despawnPoint;
     private bool _isLeaving = false;
@@ -41,12 +42,14 @@ public class VisitorAI : MonoBehaviour, IPoolable
     /// <summary>
     /// Initializes the visitor with time controller and spawn/despawn settings
     /// </summary>
+    /// <param name="spawner">Reference to the spawner that manages this visitor</param>
     /// <param name="timeController">Day/night cycle controller</param>
     /// <param name="despawnPos">Position where visitor will leave</param>
     /// <param name="openTime">Hour when visiting starts</param>
     /// <param name="closeTime">Hour when visiting ends</param>
-    public void Initialize(DayNightController timeController, Vector3 despawnPos, float openTime, float closeTime)
+    public void Initialize(VisitorSpawner spawner, DayNightController timeController, Vector3 despawnPos, float openTime, float closeTime)
     {
+        _spawner = spawner;
         _timeController = timeController;
         _despawnPoint = despawnPos;
         _openHour = openTime;
@@ -174,11 +177,10 @@ public class VisitorAI : MonoBehaviour, IPoolable
             _targetGrave = null;
         }
 
-        // Find the spawner and return to its pool
-        VisitorSpawner spawner = FindObjectOfType<VisitorSpawner>();
-        if (spawner != null)
+        // Return to pool using cached reference
+        if (_spawner != null)
         {
-            spawner.ReturnVisitorToPool(this);
+            _spawner.ReturnVisitorToPool(this);
         }
         else
         {
