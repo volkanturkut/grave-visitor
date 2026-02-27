@@ -43,13 +43,15 @@ namespace GraveVisitor.Inventory
         /// </summary>
         public bool AddItem(ItemData item, int amount = 1)
         {
+            int safeMaxStack = Mathf.Max(1, item.maxStack);
+
             if (item.isStackable)
             {
                 foreach (var slot in _slots)
                 {
-                    if (!slot.IsEmpty && slot.itemData == item && slot.quantity < item.maxStack)
+                    if (!slot.IsEmpty && slot.itemData == item && slot.quantity < safeMaxStack)
                     {
-                        int spaceRemaining = item.maxStack - slot.quantity;
+                        int spaceRemaining = safeMaxStack - slot.quantity;
                         int amountToAdd = Mathf.Min(spaceRemaining, amount);
                         slot.quantity += amountToAdd;
                         amount -= amountToAdd;
@@ -73,7 +75,7 @@ namespace GraveVisitor.Inventory
 
                 var slot = _slots[emptyIndex];
                 slot.itemData = item;
-                int amountToAdd = Mathf.Min(amount, item.maxStack);
+                int amountToAdd = Mathf.Min(amount, safeMaxStack);
                 slot.quantity = amountToAdd;
                 amount -= amountToAdd;
             }
