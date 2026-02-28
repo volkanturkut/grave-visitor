@@ -175,11 +175,10 @@ public class CameraZoomManager : MonoBehaviour
         _zoomedFramer.m_TrackedObjectOffset.x = _currentLeanOffset;
     }
 
-    // --- UPDATED LOGIC HERE ---
     private void SetZoom(bool isZoomed, bool force = false)
     {
         // Guard Clause: Only stop redundant "True" calls. 
-        // We ALWAYS allow "False" calls to pass through to fix the stuck animation bug.
+        // Always allow "False" calls to pass through to ensure the zoom-out state is consistently applied.
         if (!force && _isZoomed == isZoomed && isZoomed == true) return;
 
         _isZoomed = isZoomed;
