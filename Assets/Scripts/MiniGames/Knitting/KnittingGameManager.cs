@@ -73,10 +73,6 @@ public class KnittingGameManager : MonoBehaviour
         }
     }
 
-    // ... (Update and Input methods remain same, skipping to save space) ...
-    // COPY THE "Update", "OnSelectColorPressed", "UpdateSelectionUI" methods from previous response if needed
-    // The critical changes are below:
-
     void Update()
     {
         if (!_gameActive) return;
