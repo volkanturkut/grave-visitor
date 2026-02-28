@@ -133,36 +133,35 @@ public class GraveDirtController : MonoBehaviour, IInteractable
 
         if (controller != null && anim != null)
         {
-            // 1. Lock Movement
+            // Lock Movement
             controller.LockInput(true);
 
-            // 2. Disable Right Arm Layer (to fix animation conflict)
+            // Disable Right Arm Layer (to fix animation conflict)
             rightArmIndex = anim.GetLayerIndex("RightArmLayer");
             if (rightArmIndex != -1) anim.SetLayerWeight(rightArmIndex, 0f);
 
-            // 3. Speed up the Animator temporarily
+            // Speed up the Animator temporarily
             originalAnimSpeed = anim.speed;
             anim.speed = animationSpeedMultiplier;
 
-            // 4. Trigger the Animation
+            // Trigger the Animation
             controller.TriggerActionAnimation("Clean");
         }
 
-        // 5. WAIT: Do nothing while the animation plays
-        // This is the key change: The dirt stays dirty here!
+        // Wait while the animation plays
         yield return new WaitForSeconds(delayBeforeEffect);
 
-        // 6. Restore Animation Speed
+        // Restore Animation Speed
         if (anim != null) anim.speed = originalAnimSpeed;
 
-        // 7. NOW Play VFX (Particles)
+        // Play VFX (Particles)
         if (cleaningVFX != null)
         {
             cleaningVFX.gameObject.SetActive(true);
             cleaningVFX.Play();
         }
 
-        // 8. Clean the Dirt (Fast Fade)
+        // Clean the Dirt (Fast Fade)
         float timer = 0f;
         float startDirt = _currentDirtAmount;
 
@@ -181,7 +180,7 @@ public class GraveDirtController : MonoBehaviour, IInteractable
 
         if (cleaningVFX != null) cleaningVFX.Stop();
 
-        // 9. Restore Player State
+        // Restore Player State
         if (controller != null)
         {
             controller.LockInput(false);
