@@ -67,6 +67,25 @@ namespace Core.Events.Tests
         }
 
         [Test]
+        public void RegisterListener_NullListener_DoesNotThrowOnRaise()
+        {
+            Assert.DoesNotThrow(() =>
+            {
+                _gameEvent.RegisterListener(null);
+                _gameEvent.Raise();
+            }, "Registering a null listener should not cause an exception when the event is raised.");
+        }
+
+        [Test]
+        public void UnregisterListener_NullListener_DoesNotThrow()
+        {
+            Assert.DoesNotThrow(() =>
+            {
+                _gameEvent.UnregisterListener(null);
+            }, "Unregistering a null listener should not throw an exception.");
+        }
+
+        [Test]
         public void RegisterListener_DuplicateRegistration_InvokesOnce()
         {
             int callCount = 0;
