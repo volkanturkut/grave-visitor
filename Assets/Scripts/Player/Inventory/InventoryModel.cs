@@ -64,9 +64,10 @@ namespace GraveVisitor.Inventory
                 }
             }
 
+            int lastEmptyIndex = 0;
             while (amount > 0)
             {
-                int emptyIndex = FindEmptySlotIndex();
+                int emptyIndex = FindEmptySlotIndex(lastEmptyIndex);
                 if (emptyIndex == -1)
                 {
                     OnInventoryUpdated.Invoke();
@@ -78,6 +79,8 @@ namespace GraveVisitor.Inventory
                 int amountToAdd = Mathf.Min(amount, safeMaxStack);
                 slot.quantity = amountToAdd;
                 amount -= amountToAdd;
+
+                lastEmptyIndex = emptyIndex + 1;
             }
 
             OnInventoryUpdated.Invoke();
@@ -124,9 +127,9 @@ namespace GraveVisitor.Inventory
             }
         }
 
-        private int FindEmptySlotIndex()
+        private int FindEmptySlotIndex(int startIndex = 0)
         {
-            for (int i = 0; i < _slots.Count; i++)
+            for (int i = startIndex; i < _slots.Count; i++)
             {
                 if (_slots[i].IsEmpty) return i;
             }
