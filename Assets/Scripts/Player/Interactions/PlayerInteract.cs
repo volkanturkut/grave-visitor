@@ -67,7 +67,7 @@ public class PlayerInteract : MonoBehaviour
         int numFound = Physics.OverlapSphereNonAlloc(transform.position, interactRange, _colliderResults, interactLayer);
 
         IInteractable closestInteractable = null;
-        float closestDistance = float.MaxValue;
+        float closestDistanceSqr = float.MaxValue;
 
         for (int i = 0; i < numFound; i++)
         {
@@ -76,10 +76,10 @@ public class PlayerInteract : MonoBehaviour
 
             if (interactable != null)
             {
-                float dist = Vector3.Distance(transform.position, interactable.GetTransform().position);
-                if (dist < closestDistance)
+                float distSqr = (transform.position - interactable.GetTransform().position).sqrMagnitude;
+                if (distSqr < closestDistanceSqr)
                 {
-                    closestDistance = dist;
+                    closestDistanceSqr = distSqr;
                     closestInteractable = interactable;
                 }
             }
