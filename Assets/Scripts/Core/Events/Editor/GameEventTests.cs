@@ -33,11 +33,11 @@ namespace Core.Events.Tests
             }
             if (_listenerObject != null)
             {
-                Object.DestroyImmediate(_listenerObject);
+                UnityEngine.Object.DestroyImmediate(_listenerObject);
             }
             if (_gameEvent != null)
             {
-                Object.DestroyImmediate(_gameEvent);
+                UnityEngine.Object.DestroyImmediate(_gameEvent);
             }
         }
 
@@ -76,6 +76,27 @@ namespace Core.Events.Tests
             }, "Registering a null listener should not cause an exception when the event is raised.");
         }
 
+
+
+        [Test]
+        public void UnregisterListener_RemovesRegisteredListener_Successfully()
+        {
+            _gameEvent.RegisterListener(_listener);
+            _gameEvent.UnregisterListener(_listener);
+
+            _gameEvent.Raise();
+
+            Assert.IsFalse(_eventRaised, "A registered listener should not be invoked after being unregistered.");
+        }
+
+        [Test]
+        public void UnregisterListener_NotRegistered_DoesNotThrow()
+        {
+            Assert.DoesNotThrow(() =>
+            {
+                _gameEvent.UnregisterListener(_listener);
+            }, "Unregistering a listener that is not registered should not throw an exception.");
+        }
         [Test]
         public void UnregisterListener_NullListener_DoesNotThrow()
         {
@@ -118,7 +139,7 @@ namespace Core.Events.Tests
             Assert.IsTrue(_eventRaised, "First listener should be invoked.");
             Assert.IsTrue(event2Raised, "Second listener should be invoked.");
 
-            Object.DestroyImmediate(listenerObj2);
+            UnityEngine.Object.DestroyImmediate(listenerObj2);
         }
     }
 }
