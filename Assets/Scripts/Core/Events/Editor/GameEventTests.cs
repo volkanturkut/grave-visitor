@@ -120,5 +120,48 @@ namespace Core.Events.Tests
 
             Object.DestroyImmediate(listenerObj2);
         }
+
+        [Test]
+        public void Raise_NoListeners_DoesNotThrow()
+        {
+            Assert.DoesNotThrow(() =>
+            {
+                _gameEvent.Raise();
+            }, "Calling Raise with no listeners should not throw an exception.");
+        }
+
+        [Test]
+        public void Raise_ListenerUnregistersDuringRaise_IteratesSafely()
+        {
+            var listenerObj2 = new GameObject("TestListener2");
+            var listener2 = listenerObj2.AddComponent<GameEventListener>();
+            listener2.Event = _gameEvent;
+            listener2.Response = new UnityEvent();
+            bool event2Raised = false;
+            listener2.Response.AddListener(() => event2Raised = true);
+
+            var listenerObj3 = new GameObject("TestListener3");
+            var listener3 = listenerObj3.AddComponent<GameEventListener>();
+            listener3.Event = _gameEvent;
+            listener3.Response = new UnityEvent();
+            bool event3Raised = false;
+            listener3.Response.AddListener(() => event3Raised = true);
+
+            // Listener 2 unregisters itself when the event is raised
+            listener2.Response.AddListener(() => _gameEvent.UnregisterListener(listener2));
+
+            _gameEvent.RegisterListener(_listener);
+            _gameEvent.RegisterListener(listener2);
+            _gameEvent.RegisterListener(listener3);
+
+            Assert.DoesNotThrow(() => _gameEvent.Raise(), "Raise should not throw when a listener unregisters itself.");
+
+            Assert.IsTrue(_eventRaised, "First listener should be invoked.");
+            Assert.IsTrue(event2Raised, "Second listener (the one unregistering) should be invoked.");
+            Assert.IsTrue(event3Raised, "Third listener should be invoked.");
+
+            Object.DestroyImmediate(listenerObj2);
+            Object.DestroyImmediate(listenerObj3);
+        }
     }
 }
