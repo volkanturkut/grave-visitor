@@ -102,6 +102,37 @@ namespace Core.Tests
             // Assert
             Assert.IsTrue(obj.OnReturnCalled, "OnReturnToPool should be called on Return");
         }
+
+        [Test]
+        public void Return_ValidObject_DecreasesActiveCount()
+        {
+            // Arrange
+            TestPoolableComponent obj = _pool.Get();
+            int initialActive = _pool.ActiveCount;
+            int initialTotal = _pool.TotalCount;
+
+            // Act
+            _pool.Return(obj);
+
+            // Assert
+            Assert.AreEqual(initialActive - 1, _pool.ActiveCount, "Active count should decrease by 1");
+            Assert.AreEqual(initialTotal, _pool.TotalCount, "Total count should remain unchanged");
+        }
+
+        [Test]
+        public void Return_AlreadyReturnedObject_DoesNotDuplicateInPool()
+        {
+            // Arrange
+            TestPoolableComponent obj = _pool.Get();
+            _pool.Return(obj);
+            int availableAfterFirstReturn = _pool.AvailableCount;
+
+            // Act
+            _pool.Return(obj);
+
+            // Assert
+            Assert.AreEqual(availableAfterFirstReturn, _pool.AvailableCount, "Returning an already returned object should not increase available count");
+        }
     }
 
     public class TestPoolableComponent : MonoBehaviour, IPoolable
