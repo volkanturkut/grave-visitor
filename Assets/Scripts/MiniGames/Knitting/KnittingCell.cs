@@ -15,7 +15,7 @@ public class KnittingCell : MonoBehaviour
         _targetColorIndex = targetColorIdx;
         _isKnitted = false;
 
-        // FIX: Make sure the GameObjects are actually turned on
+        // Make sure the GameObjects are turned on
         fillImage.gameObject.SetActive(true);
         errorIcon.gameObject.SetActive(false); // Hide error initially
 
@@ -31,7 +31,7 @@ public class KnittingCell : MonoBehaviour
     {
         if (selectionOutline != null)
         {
-            // FIX: Enable the GameObject, not just the Image component
+            // Enable the GameObject, not just the Image component
             selectionOutline.gameObject.SetActive(isSelected);
         }
     }
@@ -45,7 +45,7 @@ public class KnittingCell : MonoBehaviour
             // SUCCESS
             _isKnitted = true;
 
-            // FIX: Ensure GameObject is on
+            // Ensure GameObject is on
             fillImage.gameObject.SetActive(true);
             errorIcon.gameObject.SetActive(false);
 
@@ -59,7 +59,7 @@ public class KnittingCell : MonoBehaviour
         else
         {
             // FAIL
-            // FIX: Enable the Error GameObject
+            // Enable the Error GameObject
             errorIcon.gameObject.SetActive(true);
             return false;
         }
