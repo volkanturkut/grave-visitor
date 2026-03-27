@@ -114,6 +114,13 @@ public class ObjectPool<T> where T : Component
             return;
         }
 
+        // Check if object is already in the available queue
+        if (_availableObjects.Contains(obj))
+        {
+            DebugLogger.LogWarning($"[ObjectPool] Attempted to return object that is already in the pool: {obj.name}");
+            return;
+        }
+
         // Call lifecycle method if object implements IPoolable
         if (obj is IPoolable poolable)
         {
