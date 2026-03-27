@@ -16,13 +16,20 @@ public class KnittingCell : MonoBehaviour
         _isKnitted = false;
 
         // FIX: Make sure the GameObjects are actually turned on
-        fillImage.gameObject.SetActive(true);
-        errorIcon.gameObject.SetActive(false); // Hide error initially
+        if (fillImage != null)
+        {
+            fillImage.gameObject.SetActive(true);
 
-        // Create the "Ghost" pattern (Guidance)
-        Color ghostColor = targetColor;
-        ghostColor.a = 0.2f; // Low opacity
-        fillImage.color = ghostColor;
+            // Create the "Ghost" pattern (Guidance)
+            Color ghostColor = targetColor;
+            ghostColor.a = 0.2f; // Low opacity
+            fillImage.color = ghostColor;
+        }
+
+        if (errorIcon != null)
+        {
+            errorIcon.gameObject.SetActive(false); // Hide error initially
+        }
 
         SetSelected(false);
     }
@@ -46,13 +53,19 @@ public class KnittingCell : MonoBehaviour
             _isKnitted = true;
 
             // FIX: Ensure GameObject is on
-            fillImage.gameObject.SetActive(true);
-            errorIcon.gameObject.SetActive(false);
+            if (fillImage != null)
+            {
+                fillImage.gameObject.SetActive(true);
+                // Make color solid
+                Color solidColor = displayColor;
+                solidColor.a = 1f;
+                fillImage.color = solidColor;
+            }
 
-            // Make color solid
-            Color solidColor = displayColor;
-            solidColor.a = 1f;
-            fillImage.color = solidColor;
+            if (errorIcon != null)
+            {
+                errorIcon.gameObject.SetActive(false);
+            }
 
             return true;
         }
@@ -60,7 +73,10 @@ public class KnittingCell : MonoBehaviour
         {
             // FAIL
             // FIX: Enable the Error GameObject
-            errorIcon.gameObject.SetActive(true);
+            if (errorIcon != null)
+            {
+                errorIcon.gameObject.SetActive(true);
+            }
             return false;
         }
     }
