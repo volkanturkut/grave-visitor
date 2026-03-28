@@ -31,7 +31,6 @@ public class KnittingCell : MonoBehaviour
     {
         if (selectionOutline != null)
         {
-            // FIX: Enable the GameObject, not just the Image component
             selectionOutline.gameObject.SetActive(isSelected);
         }
     }
