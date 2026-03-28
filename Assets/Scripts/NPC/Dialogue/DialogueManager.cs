@@ -108,6 +108,7 @@ public class DialogueManager : MonoBehaviour
 
         string sentence = _sentences.Dequeue();
         dialogueText.text = sentence;
+        _inputCooldown = INPUT_COOLDOWN_DURATION;
     }
 
     private void EndDialogue()
