@@ -613,14 +613,7 @@ public class InventoryManager : MonoBehaviour
 
             if (Physics.Raycast(spawnOrigin, dropDirection, out RaycastHit hit, dropDistance))
             {
-                dropDistance = hit.distance - 0.2f;
-                if (dropDistance < 0.2f) dropDistance = 0.2f;
-
-                // Security Fix: Prevent items from being dropped through walls
-                if (dropDistance > hit.distance)
-                {
-                    dropDistance = Mathf.Max(0f, hit.distance - 0.05f);
-                }
+                dropDistance = CalculateDropDistance(hit.distance);
             }
 
             Vector3 dropPos = playerTransform.position + (dropDirection * dropDistance) + new Vector3(0, 0.25f, 0);
@@ -634,6 +627,20 @@ public class InventoryManager : MonoBehaviour
             }
         }
         inventorySlots[index] = new InventorySlotData(); RefreshUI();
+    }
+
+    public static float CalculateDropDistance(float hitDistance)
+    {
+        float dropDistance = hitDistance - 0.2f;
+        if (dropDistance < 0.2f) dropDistance = 0.2f;
+
+        // Security Fix: Prevent items from being dropped through walls
+        if (dropDistance > hitDistance)
+        {
+            dropDistance = Mathf.Max(0f, hitDistance - 0.05f);
+        }
+
+        return dropDistance;
     }
 
     /// <summary>
