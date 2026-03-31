@@ -42,12 +42,7 @@ public class PlayerInteract : MonoBehaviour
 
             if (target != null)
             {
-                DebugLogger.Log($"[PlayerInteract] SUCCESS! Interacting with {target.GetTransform().name}");
                 target.Interact(transform);
-            }
-            else
-            {
-                DebugLogger.LogWarning("[PlayerInteract] FAIL: Interact pressed, but no object found in range/layer.");
             }
         }
     }
