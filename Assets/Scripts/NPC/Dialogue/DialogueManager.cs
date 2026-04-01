@@ -29,7 +29,6 @@ public class DialogueManager : MonoBehaviour
     private GhostNPC _currentInteractingGhost;
     private Action _onDialogueComplete;
 
-    // FIX: Add a timer to prevent instant skipping
     private float _inputCooldown = 0f;
 
     private void Awake()
@@ -45,7 +44,6 @@ public class DialogueManager : MonoBehaviour
     {
         if (!_isDialogueActive) return;
 
-        // FIX: If cooldown is active, reduce it and ignore input
         if (_inputCooldown > 0f)
         {
             _inputCooldown -= Time.deltaTime;
